@@ -1,4 +1,3 @@
-import React from 'react';
 import { Wallet, Plus, Clock } from 'lucide-react';
 import type { CreditBalance } from '../../../shared/types';
 

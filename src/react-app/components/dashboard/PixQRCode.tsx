@@ -28,72 +28,16 @@ export default function PixQRCode({ amount, pixKey, pixEmail, pixCode }: PixQRCo
     }
   };
 
-  // QR Code real baseado na imagem fornecida
+  // QR Code real da imagem fornecida
   const QRCodeImage = () => {
-    // Representação mais precisa do QR Code da imagem
     return (
       <div className="w-64 h-64 bg-white border-2 border-gray-300 rounded-lg p-4 flex items-center justify-center">
-        <svg width="240" height="240" viewBox="0 0 29 29" className="w-full h-full">
-          <rect width="29" height="29" fill="white"/>
-          
-          {/* Padrão baseado na imagem real do QR Code */}
-          {/* Canto superior esquerdo */}
-          <rect x="0" y="0" width="7" height="7" fill="black"/>
-          <rect x="1" y="1" width="5" height="5" fill="white"/>
-          <rect x="2" y="2" width="3" height="3" fill="black"/>
-          
-          {/* Canto superior direito */}
-          <rect x="22" y="0" width="7" height="7" fill="black"/>
-          <rect x="23" y="1" width="5" height="5" fill="white"/>
-          <rect x="24" y="2" width="3" height="3" fill="black"/>
-          
-          {/* Canto inferior esquerdo */}
-          <rect x="0" y="22" width="7" height="7" fill="black"/>
-          <rect x="1" y="23" width="5" height="5" fill="white"/>
-          <rect x="2" y="24" width="3" height="3" fill="black"/>
-          
-          {/* Timing patterns */}
-          {Array.from({ length: 13 }, (_, i) => (
-            <rect key={`timing-h-${i}`} x={8 + i} y="6" width="1" height="1" fill={i % 2 === 0 ? "black" : "white"}/>
-          ))}
-          {Array.from({ length: 13 }, (_, i) => (
-            <rect key={`timing-v-${i}`} x="6" y={8 + i} width="1" height="1" fill={i % 2 === 0 ? "black" : "white"}/>
-          ))}
-          
-          {/* Padrão central de alinhamento */}
-          <rect x="12" y="12" width="5" height="5" fill="black"/>
-          <rect x="13" y="13" width="3" height="3" fill="white"/>
-          <rect x="14" y="14" width="1" height="1" fill="black"/>
-          
-          {/* Dados do QR Code (padrão simplificado baseado na imagem) */}
-          <rect x="8" y="0" width="1" height="1" fill="black"/>
-          <rect x="9" y="0" width="1" height="1" fill="white"/>
-          <rect x="10" y="0" width="1" height="1" fill="black"/>
-          <rect x="11" y="0" width="1" height="1" fill="black"/>
-          <rect x="12" y="0" width="1" height="1" fill="white"/>
-          <rect x="13" y="0" width="1" height="1" fill="black"/>
-          
-          <rect x="8" y="1" width="1" height="1" fill="white"/>
-          <rect x="9" y="1" width="1" height="1" fill="black"/>
-          <rect x="10" y="1" width="1" height="1" fill="white"/>
-          <rect x="11" y="1" width="1" height="1" fill="black"/>
-          <rect x="12" y="1" width="1" height="1" fill="black"/>
-          <rect x="13" y="1" width="1" height="1" fill="white"/>
-          
-          {/* Mais padrões de dados */}
-          {Array.from({ length: 200 }, (_, i) => {
-            const x = (i * 3) % 29;
-            const y = Math.floor((i * 3) / 29);
-            
-            // Evitar sobrescrever os padrões de posição
-            if ((x < 9 && y < 9) || (x > 19 && y < 9) || (x < 9 && y > 19)) return null;
-            if (x === 6 || y === 6) return null; // timing patterns
-            if (x >= 12 && x <= 16 && y >= 12 && y <= 16) return null; // alignment pattern
-            
-            const shouldFill = (x + y + i) % 3 === 0;
-            return shouldFill ? <rect key={`data-${i}`} x={x} y={y} width="1" height="1" fill="black"/> : null;
-          })}
-        </svg>
+        <img 
+          src="/pix-qrcode.png" 
+          alt="QR Code PIX para pagamento" 
+          className="w-full h-full object-contain"
+          style={{ imageRendering: 'pixelated' }}
+        />
       </div>
     );
   };
