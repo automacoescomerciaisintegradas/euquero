@@ -19,7 +19,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="/" className="text-2xl font-bold">
-            Insta<span className="text-primary">Ninja</span>
+            Eu<span className="text-primary">Quero</span>
           </a>
 
           {/* Navegação Desktop */}

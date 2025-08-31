@@ -73,3 +73,74 @@ export const ContactFormSchema = z.object({
 });
 
 export type ContactFormData = z.infer<typeof ContactFormSchema>;
+
+// Schemas de validação para autenticação
+export const LoginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
+});
+
+export const RegisterSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
+  phone: z.string().regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, "Telefone inválido"),
+});
+
+export type LoginData = z.infer<typeof LoginSchema>;
+export type RegisterData = z.infer<typeof RegisterSchema>;
+
+// Tipos para resposta de autenticação
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  user?: User;
+  token?: string;
+}
+
+// Sistema de Créditos
+export interface CreditBalance {
+  id: string;
+  userId: string;
+  balance: number;
+  currency: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  type: 'credit' | 'debit';
+  amount: number;
+  description: string;
+  service: string;
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: Date;
+}
+
+export interface PaymentMethod {
+  type: 'pix';
+  minimumAmount: number;
+  processingTime: string;
+  fees: number;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  type: 'free' | 'pay_per_use';
+  price: number;
+  credits: number;
+  features: string[];
+  highlighted?: boolean;
+  badge?: string;
+}
+
+// Schema para recarga de créditos (apenas PIX)
+export const CreditRechargeSchema = z.object({
+  amount: z.number().min(50, "Valor mínimo de recarga é R$ 50"),
+  paymentMethod: z.literal('pix'),
+});
+
+export type CreditRechargeData = z.infer<typeof CreditRechargeSchema>;

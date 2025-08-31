@@ -3,19 +3,19 @@ import { ChevronDown } from "lucide-react";
 
 const faqItems = [
   {
-    question: "Por que usar o InstaNinja em vez de responder manualmente?",
+    question: "Por que usar o EuQuero em vez de responder manualmente?",
     answer:
       "Porque cada segundo conta. 78% dos clientes desistem se você demora mais de 30 segundos para responder. A automação garante que você nunca perca uma venda por demora.",
   },
   {
     question: "É seguro usar a ferramenta?",
     answer:
-      "Sim, 100% seguro. O InstaNinja utiliza a API oficial do Instagram (Meta), o que garante total conformidade com as políticas da plataforma e a segurança da sua conta.",
+      "Sim, 100% seguro. O EuQuero utiliza APIs oficiais, o que garante total conformidade com as políticas das plataformas e a segurança da sua conta.",
   },
   {
     question: "Como a ferramenta ajuda com o bem-estar digital?",
     answer:
-      "Ao automatizar tarefas repetitivas, o InstaNinja reduz a necessidade de estar online o tempo todo, permitindo que você foque em outras áreas do seu negócio e tenha mais tempo livre.",
+      "Ao automatizar tarefas repetitivas, o EuQuero reduz a necessidade de estar online o tempo todo, permitindo que você foque em outras áreas do seu negócio e tenha mais tempo livre.",
   },
   {
     question: "Qual é a política de cancelamento?",
@@ -25,7 +25,7 @@ const faqItems = [
   {
     question: "O que exatamente a ferramenta faz?",
     answer:
-      "O InstaNinja automatiza interações no Instagram, como responder comentários, enviar mensagens diretas de boas-vindas, compartilhar links, e muito mais, funcionando 24/7 para você.",
+      "O EuQuero automatiza interações em redes sociais, como responder comentários, enviar mensagens diretas de boas-vindas, compartilhar links, e muito mais, funcionando 24/7 para você.",
   },
 ];
 
