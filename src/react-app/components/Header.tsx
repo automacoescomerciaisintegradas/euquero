@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import Container from './ui/Container';
-import Button from './ui/Button';
-import Icon from './ui/Icon';
+import { useState } from "react";
+import Container from "./ui/Container";
+import Button from "./ui/Button";
+import Icon from "./ui/Icon";
 
 const navigationItems = [
-  { name: 'Como Funciona', href: '#como-funciona' },
-  { name: 'Benefícios', href: '#beneficios' },
-  { name: 'Dúvidas Frequentes', href: '#faq' },
-  { name: 'Blog', href: '#blog' },
+  { name: "Como Funciona", href: "#como-funciona" },
+  { name: "Benefícios", href: "#beneficios" },
+  { name: "Dúvidas Frequentes", href: "#faq" },
+  { name: "Blog", href: "#blog" },
 ];
 
 const Header = () => {
@@ -37,9 +37,9 @@ const Header = () => {
 
           {/* Botão Login Desktop */}
           <div className="hidden md:block">
-            <Button 
+            <Button
               variant="primary"
-              onClick={() => window.location.href = '/login'}
+              onClick={() => (window.location.href = "/login")}
             >
               LOGIN
             </Button>
@@ -52,7 +52,7 @@ const Header = () => {
               className="text-white hover:text-primary focus:outline-none"
               aria-label="Abrir menu"
             >
-              <Icon name={isMobileMenuOpen ? 'X' : 'Menu'} size={28} />
+              <Icon name={isMobileMenuOpen ? "X" : "Menu"} size={28} />
             </button>
           </div>
         </div>
@@ -71,10 +71,10 @@ const Header = () => {
                   {item.name}
                 </a>
               ))}
-              <Button 
+              <Button
                 variant="primary"
                 className="w-full max-w-xs mt-4"
-                onClick={() => window.location.href = '/login'}
+                onClick={() => (window.location.href = "/login")}
               >
                 LOGIN
               </Button>

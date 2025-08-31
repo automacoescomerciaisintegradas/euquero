@@ -1,6 +1,7 @@
 # Padrões de Interface para EuQuero
 
 ## Diretrizes de Idioma
+
 - **Idioma Principal**: Português brasileiro
 - **Consistência**: Todos os textos devem seguir o mesmo padrão linguístico
 - **Localização**: Adaptar formatos de data, moeda e telefone para o Brasil
@@ -8,6 +9,7 @@
 ## Componentes de Autenticação
 
 ### Formulário de Login
+
 ```tsx
 // Estrutura do formulário de login
 Email: [input type="email" placeholder="Digite seu email"]
@@ -20,6 +22,7 @@ Senha: [input type="password" placeholder="Digite sua senha"]
 ```
 
 ### Formulário de Cadastro
+
 ```tsx
 // Estrutura do formulário de cadastro
 👤 Usuário:
@@ -33,6 +36,7 @@ Telefone: [input type="tel" placeholder="(88) 98871-2711"]
 ## Componentes de Contato
 
 ### Rodapé
+
 ```tsx
 // Estrutura do rodapé
 📞 Suporte
@@ -42,6 +46,7 @@ Telefone: [input type="tel" placeholder="(88) 98871-2711"]
 ```
 
 ### Página de Contato
+
 - Formulário de contato em português
 - Todas as opções de suporte visíveis
 - Links funcionais para Telegram e WhatsApp
@@ -50,6 +55,7 @@ Telefone: [input type="tel" placeholder="(88) 98871-2711"]
 ## Padrões de Texto
 
 ### Mensagens de Validação
+
 - "Email obrigatório"
 - "Senha deve ter pelo menos 8 caracteres"
 - "Telefone inválido"
@@ -57,6 +63,7 @@ Telefone: [input type="tel" placeholder="(88) 98871-2711"]
 - "Login realizado com sucesso"
 
 ### Botões e Ações
+
 - "Entrar" (não "Login")
 - "Cadastrar" (não "Registrar")
 - "Sair" (não "Logout")
@@ -64,6 +71,7 @@ Telefone: [input type="tel" placeholder="(88) 98871-2711"]
 - "Cancelar"
 
 ### Navegação
+
 - "Início"
 - "Soluções"
 - "Contato"
@@ -71,6 +79,7 @@ Telefone: [input type="tel" placeholder="(88) 98871-2711"]
 - "Minha Conta"
 
 ## Formatação Brasileira
+
 - **Telefone**: (88) 98871-2711
 - **Data**: DD/MM/AAAA
 - **Moeda**: R$ 0,00

@@ -6,7 +6,9 @@ const PricingSection = () => {
   return (
     <section id="planos" className="py-20 bg-black text-white">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">Planos a Partir de R$ 39,90/mês</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Planos a Partir de R$ 39,90/mês
+        </h2>
         <div className="flex flex-wrap justify-center gap-8">
           {/* Plano Grátis */}
           <Card className="max-w-sm w-full lg:w-1/3 bg-gray-900 text-white">
@@ -29,7 +31,9 @@ const PricingSection = () => {
           <Card className="max-w-sm w-full lg:w-1/3 bg-primary text-white shadow-lg shadow-primary/30">
             <div className="p-8">
               <h3 className="text-2xl font-bold mb-4">Plano Mensal</h3>
-              <p className="text-gray-200 mb-6">Ideal para um crescimento constante</p>
+              <p className="text-gray-200 mb-6">
+                Ideal para um crescimento constante
+              </p>
               <div className="mb-6">
                 <span className="text-4xl font-bold">R$39,90</span>
                 <span className="text-gray-300">/mês</span>
@@ -69,19 +73,18 @@ const PricingSection = () => {
           </Card>
         </div>
         <div className="text-center mt-16">
-            <h3 className="text-3xl font-bold mb-4">
-              Pronto para começar?
-            </h3>
-            <p className="text-xl mb-8 opacity-90">
-              Junte-se a milhares de negócios que já estão economizando tempo e vendendo mais.
-            </p>
-            <Button 
-              variant="secondary"
-              size="lg"
-              onClick={() => window.location.href = '#'}
-            >
-              Comece Agora
-            </Button>
+          <h3 className="text-3xl font-bold mb-4">Pronto para começar?</h3>
+          <p className="text-xl mb-8 opacity-90">
+            Junte-se a milhares de negócios que já estão economizando tempo e
+            vendendo mais.
+          </p>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={() => (window.location.href = "#")}
+          >
+            Comece Agora
+          </Button>
         </div>
       </div>
     </section>

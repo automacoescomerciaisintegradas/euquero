@@ -7,6 +7,7 @@ A landing page do EuQuero será uma página moderna e responsiva que apresenta a
 ## Arquitetura
 
 ### Estrutura da Página
+
 ```
 ┌─────────────────────────────────────┐
 │              Header                 │
@@ -22,6 +23,7 @@ A landing page do EuQuero será uma página moderna e responsiva que apresenta a
 ```
 
 ### Tecnologias Utilizadas
+
 - **React 19** com TypeScript
 - **Tailwind CSS** para estilização
 - **Lucide React** para ícones
@@ -31,6 +33,7 @@ A landing page do EuQuero será uma página moderna e responsiva que apresenta a
 ## Componentes e Interfaces
 
 ### 1. Header Component
+
 ```tsx
 interface HeaderProps {
   currentPage?: string;
@@ -44,6 +47,7 @@ interface HeaderProps {
 ```
 
 ### 2. Hero Section Component
+
 ```tsx
 interface HeroSectionProps {
   title: string;
@@ -60,6 +64,7 @@ interface HeroSectionProps {
 ```
 
 ### 3. Features Section Component
+
 ```tsx
 interface Feature {
   icon: LucideIcon;
@@ -78,6 +83,7 @@ interface FeaturesSectionProps {
 ```
 
 ### 4. Pricing Section Component
+
 ```tsx
 interface PricingPlan {
   name: string;
@@ -99,9 +105,10 @@ interface PricingSectionProps {
 ```
 
 ### 5. Footer Component
+
 ```tsx
 interface ContactInfo {
-  type: 'email' | 'telegram' | 'whatsapp';
+  type: "email" | "telegram" | "whatsapp";
   label: string;
   value: string;
   link: string;
@@ -116,6 +123,7 @@ interface ContactInfo {
 ## Modelos de Dados
 
 ### Configuração da Landing Page
+
 ```typescript
 // src/shared/types.ts
 export interface LandingPageConfig {
@@ -132,14 +140,16 @@ export interface LandingPageConfig {
 ```
 
 ### Dados Estáticos
+
 ```typescript
 // src/shared/landing-data.ts
 export const landingPageData: LandingPageConfig = {
   hero: {
     title: "Fidelize seus clientes com inteligência",
-    subtitle: "Plataforma completa de fidelização e marketing automático para impulsionar seu negócio",
+    subtitle:
+      "Plataforma completa de fidelização e marketing automático para impulsionar seu negócio",
     ctaText: "Comece Agora",
-    ctaLink: "/cadastro"
+    ctaLink: "/cadastro",
   },
   // ... demais configurações
 };
@@ -148,23 +158,26 @@ export const landingPageData: LandingPageConfig = {
 ## Tratamento de Erros
 
 ### Estratégias de Error Handling
+
 1. **Fallbacks Graceful**: Componentes com dados padrão caso falhe o carregamento
 2. **Loading States**: Indicadores de carregamento para seções dinâmicas
 3. **Error Boundaries**: Captura de erros React para evitar quebra da página
 4. **Retry Logic**: Tentativas automáticas para recursos que falharam
 
 ### Mensagens de Erro em Português
+
 ```typescript
 export const errorMessages = {
   loadingFailed: "Erro ao carregar conteúdo. Tente novamente.",
   networkError: "Problema de conexão. Verifique sua internet.",
-  genericError: "Algo deu errado. Nossa equipe foi notificada."
+  genericError: "Algo deu errado. Nossa equipe foi notificada.",
 };
 ```
 
 ## Estratégia de Testes
 
 ### Testes de Componentes
+
 1. **Header**: Navegação funcional, responsividade
 2. **Hero Section**: CTA redirecionamento, conteúdo correto
 3. **Features**: Renderização de ícones e textos
@@ -172,12 +185,14 @@ export const errorMessages = {
 5. **Footer**: Links de contato funcionais
 
 ### Testes de Integração
+
 1. **Navegação completa**: Fluxo entre seções
 2. **Responsividade**: Diferentes tamanhos de tela
 3. **Performance**: Tempo de carregamento
 4. **Acessibilidade**: Navegação por teclado, screen readers
 
 ### Testes de Usabilidade
+
 1. **Conversão**: Taxa de cliques no CTA
 2. **Engajamento**: Tempo na página, scroll depth
 3. **Mobile**: Experiência em dispositivos móveis
@@ -186,29 +201,33 @@ export const errorMessages = {
 ## Design System
 
 ### Paleta de Cores
+
 ```css
 :root {
-  --primary: #3B82F6;      /* Azul principal */
-  --primary-dark: #1E40AF;  /* Azul escuro */
-  --secondary: #10B981;     /* Verde sucesso */
-  --accent: #F59E0B;        /* Amarelo destaque */
-  --neutral-50: #F9FAFB;    /* Fundo claro */
-  --neutral-900: #111827;   /* Texto escuro */
+  --primary: #3b82f6; /* Azul principal */
+  --primary-dark: #1e40af; /* Azul escuro */
+  --secondary: #10b981; /* Verde sucesso */
+  --accent: #f59e0b; /* Amarelo destaque */
+  --neutral-50: #f9fafb; /* Fundo claro */
+  --neutral-900: #111827; /* Texto escuro */
 }
 ```
 
 ### Tipografia
+
 - **Títulos**: font-bold, text-3xl/4xl/5xl
 - **Subtítulos**: font-semibold, text-xl/2xl
 - **Corpo**: font-normal, text-base/lg
 - **Botões**: font-medium, text-sm/base
 
 ### Espaçamento
+
 - **Seções**: py-16 md:py-24
 - **Containers**: max-w-7xl mx-auto px-4
 - **Elementos**: space-y-8, gap-6/8/12
 
 ### Componentes Reutilizáveis
+
 1. **Button**: Variações primary, secondary, outline
 2. **Card**: Container padrão para features e pricing
 3. **Container**: Wrapper responsivo para seções

@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import Container from './ui/Container';
-import Button from './ui/Button';
-import { landingPageData } from '../../shared/landing-data';
+import { useState } from "react";
+import Container from "./ui/Container";
+import Button from "./ui/Button";
+import { landingPageData } from "../../shared/landing-data";
 
 const HeroSection = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +29,12 @@ const HeroSection = () => {
 
             {/* Título Principal */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              {hero.title.split(' ').map((word, index) => (
-                <span key={index} className={index === 2 ? 'text-blue-600' : ''}>
-                  {word}{' '}
+              {hero.title.split(" ").map((word, index) => (
+                <span
+                  key={index}
+                  className={index === 2 ? "text-blue-600" : ""}
+                >
+                  {word}{" "}
                 </span>
               ))}
             </h1>
@@ -53,7 +56,9 @@ const HeroSection = () => {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">+1M</div>
-                <div className="text-sm text-gray-600">Clientes Fidelizados</div>
+                <div className="text-sm text-gray-600">
+                  Clientes Fidelizados
+                </div>
               </div>
             </div>
 
@@ -78,11 +83,11 @@ const HeroSection = () => {
                   </>
                 )}
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => window.location.href = '#features'}
+                onClick={() => (window.location.href = "#features")}
                 className="text-lg px-8 py-4"
               >
                 Ver Funcionalidades
@@ -91,13 +96,17 @@ const HeroSection = () => {
 
             {/* Prova Social */}
             <div className="mt-8 pt-8 border-t border-gray-200">
-              <p className="text-sm text-gray-500 mb-4">Empresas que confiam no EuQuero:</p>
+              <p className="text-sm text-gray-500 mb-4">
+                Empresas que confiam no EuQuero:
+              </p>
               <div className="flex items-center justify-center lg:justify-start space-x-6 opacity-60">
-                {['TechCorp', 'InovaBR', 'StartupXYZ', 'EmpresaABC'].map((company) => (
-                  <div key={company} className="text-gray-400 font-medium">
-                    {company}
-                  </div>
-                ))}
+                {["TechCorp", "InovaBR", "StartupXYZ", "EmpresaABC"].map(
+                  (company) => (
+                    <div key={company} className="text-gray-400 font-medium">
+                      {company}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -119,10 +128,12 @@ const HeroSection = () => {
                     <div className="h-4 bg-gray-200 rounded w-5/6"></div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white rounded-xl p-6 shadow-lg">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-medium text-gray-600">Fidelização Ativa</span>
+                    <span className="text-sm font-medium text-gray-600">
+                      Fidelização Ativa
+                    </span>
                     <span className="text-green-600 font-bold">+24%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">

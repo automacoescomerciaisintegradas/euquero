@@ -1,16 +1,11 @@
 # Plano de Implementação - Refatoração EuQuero sem Mocha Framework
 
 - [x] 1. Preparar ambiente para refatoração
-
-
-
   - Criar backup dos arquivos principais que serão modificados
   - Verificar status atual do git e criar branch para refatoração
   - _Requisitos: 7.1, 7.2_
 
 - [x] 2. Atualizar package.json removendo dependências Mocha
-
-
   - Remover @getmocha/vite-plugins e @getmocha/users-service das devDependencies
   - Alterar name de "mocha-app" para "euquero-app"
   - Atualizar version para "1.0.0"
@@ -18,16 +13,12 @@
   - _Requisitos: 6.1, 6.2, 6.3, 6.5_
 
 - [x] 3. Refatorar configuração Vite removendo plugins Mocha
-
-
   - Remover import de mochaPlugins do @getmocha/vite-plugins
   - Atualizar array de plugins para usar apenas react() e cloudflare()
   - Manter todas as outras configurações (server, build, resolve)
   - _Requisitos: 2.1, 2.2, 2.3, 2.4_
 
 - [x] 4. Atualizar template HTML removendo referências Mocha
-
-
   - Remover todos os links para mocha-cdn.com (favicon, og:image, twitter:image, apple-touch-icon)
   - Atualizar title para "EuQuero - Automação Inteligente"
   - Atualizar meta description para descrever o projeto EuQuero
@@ -36,8 +27,6 @@
   - _Requisitos: 4.1, 4.2, 4.3, 4.4_
 
 - [x] 5. Atualizar README.md removendo referências ao Mocha
-
-
   - Remover menção a "This app was created using https://getmocha.com"
   - Atualizar descrição para focar no projeto EuQuero independente
   - Adicionar instruções de setup sem referências ao Mocha
@@ -45,8 +34,6 @@
   - _Requisitos: 5.1, 5.3, 5.4_
 
 - [ ] 6. Atualizar documentação de steering removendo referências Mocha
-
-
   - Remover arquivo .kiro/steering/mocha-framework.md
   - Atualizar .kiro/steering/project-overview.md removendo linha sobre Mocha framework
   - Verificar outros arquivos de steering para remover menções ao Mocha

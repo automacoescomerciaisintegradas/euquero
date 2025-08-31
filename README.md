@@ -14,30 +14,36 @@ Este projeto utiliza uma arquitetura limpa e independente, sem dependências de 
 ## Configuração e Desenvolvimento
 
 ### Pré-requisitos
-- Node.js 18+ 
+
+- Node.js 18+
 - npm ou yarn
 
 ### Instalação
+
 ```bash
 npm install
 ```
 
 ### Desenvolvimento Local
+
 ```bash
 npm run dev
 ```
 
 ### Build de Produção
+
 ```bash
 npm run build
 ```
 
 ### Validação de Deployment
+
 ```bash
 npm run check
 ```
 
 ### Verificação de Qualidade
+
 ```bash
 npm run lint
 ```

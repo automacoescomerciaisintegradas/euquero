@@ -1,5 +1,5 @@
-import Button from './ui/Button';
-import Container from './ui/Container';
+import Button from "./ui/Button";
+import Container from "./ui/Container";
 
 const Hero = () => {
   return (
@@ -9,13 +9,15 @@ const Hero = () => {
           Automação para Instagram
         </h1>
         <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-          Pare de perder tempo e clientes respondendo manualmente. Automatize seu Instagram com a API Oficial e foque no que realmente importa: crescer seu negócio.
+          Pare de perder tempo e clientes respondendo manualmente. Automatize
+          seu Instagram com a API Oficial e foque no que realmente importa:
+          crescer seu negócio.
         </p>
         <div className="flex justify-center mb-8">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             size="lg"
-            onClick={() => window.location.href = '#planos'}
+            onClick={() => (window.location.href = "#planos")}
           >
             Teste Grátis
           </Button>

@@ -5,7 +5,7 @@ export interface User {
   email: string;
   name?: string;
   phone?: string;
-  provider: 'email' | 'google' | 'github';
+  provider: "email" | "google" | "github";
   providerId?: string;
   emailVerified: boolean;
   createdAt: Date;
@@ -33,7 +33,7 @@ export interface PricingPlan {
 }
 
 export interface ContactInfo {
-  type: 'email' | 'telegram' | 'whatsapp';
+  type: "email" | "telegram" | "whatsapp";
   label: string;
   value: string;
   link: string;
@@ -60,13 +60,16 @@ export interface WhatsAppConfig {
 }
 
 // Schema de validação para formulário de contato
-import { z } from 'zod';
+import { z } from "zod";
 
 export const ContactFormSchema = z.object({
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, 'Telefone inválido').optional(),
-  message: z.string().min(10, 'Mensagem deve ter pelo menos 10 caracteres')
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  phone: z
+    .string()
+    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, "Telefone inválido")
+    .optional(),
+  message: z.string().min(10, "Mensagem deve ter pelo menos 10 caracteres"),
 });
 
 export type ContactFormData = z.infer<typeof ContactFormSchema>;

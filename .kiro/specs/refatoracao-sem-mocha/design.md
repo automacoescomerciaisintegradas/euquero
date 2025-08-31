@@ -9,6 +9,7 @@ Esta refatoração transformará o projeto EuQuero de uma aplicação baseada no
 ### Arquitetura Atual vs Nova Arquitetura
 
 **Atual (com Mocha):**
+
 ```
 EuQuero App
 ├── @getmocha/vite-plugins (framework layer)
@@ -19,6 +20,7 @@ EuQuero App
 ```
 
 **Nova (independente):**
+
 ```
 EuQuero App
 ├── React Frontend (puro)
@@ -40,6 +42,7 @@ EuQuero App
 ### 1. Sistema de Build (Vite)
 
 **Configuração Limpa:**
+
 ```typescript
 // vite.config.ts - Nova versão
 import { defineConfig } from "vite";
@@ -53,6 +56,7 @@ export default defineConfig({
 ```
 
 **Funcionalidades Mantidas:**
+
 - Hot Module Replacement (HMR)
 - TypeScript compilation
 - Cloudflare Workers integration
@@ -62,6 +66,7 @@ export default defineConfig({
 ### 2. Frontend React
 
 **Estrutura Mantida:**
+
 ```
 src/react-app/
 ├── components/     # Componentes reutilizáveis
@@ -71,6 +76,7 @@ src/react-app/
 ```
 
 **Funcionalidades Preservadas:**
+
 - Todos os componentes existentes (Header, Hero, Features, etc.)
 - Sistema de roteamento com React Router
 - Integração com Tailwind CSS
@@ -79,6 +85,7 @@ src/react-app/
 ### 3. Backend Hono
 
 **Estrutura Mantida:**
+
 ```
 src/worker/
 ├── index.ts       # API routes e handlers
@@ -86,6 +93,7 @@ src/worker/
 ```
 
 **Funcionalidades Preservadas:**
+
 - Todas as rotas API existentes
 - Validação com Zod
 - Integração com Cloudflare Workers
@@ -94,6 +102,7 @@ src/worker/
 ### 4. Shared Resources
 
 **Estrutura Mantida:**
+
 ```
 src/shared/
 ├── types.ts       # Tipos compartilhados
@@ -146,25 +155,31 @@ src/shared/
 ```html
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EuQuero - Automação Inteligente</title>
-  <meta name="description" content="Plataforma de automação inteligente para redes sociais e atendimento" />
-  
-  <!-- Open Graph -->
-  <meta property="og:title" content="EuQuero - Automação Inteligente" />
-  <meta property="og:description" content="Plataforma de automação inteligente para redes sociais e atendimento" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://euquero.com" />
-  
-  <!-- Favicon (será criado posteriormente) -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/react-app/main.tsx"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EuQuero - Automação Inteligente</title>
+    <meta
+      name="description"
+      content="Plataforma de automação inteligente para redes sociais e atendimento"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="EuQuero - Automação Inteligente" />
+    <meta
+      property="og:description"
+      content="Plataforma de automação inteligente para redes sociais e atendimento"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://euquero.com" />
+
+    <!-- Favicon (será criado posteriormente) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/react-app/main.tsx"></script>
+  </body>
 </html>
 ```
 
@@ -216,26 +231,31 @@ src/shared/
 ## Plano de Implementação
 
 ### Fase 1: Preparação
+
 - Backup do projeto atual
 - Análise de dependências
 - Criação de branch para refatoração
 
 ### Fase 2: Remoção do Mocha
+
 - Atualização do package.json
 - Refatoração do vite.config.ts
 - Remoção de imports e referências
 
 ### Fase 3: Limpeza e Otimização
+
 - Atualização do HTML template
 - Limpeza da documentação
 - Otimização das configurações
 
 ### Fase 4: Testes e Validação
+
 - Testes de funcionalidade
 - Testes de build e deployment
 - Validação de performance
 
 ### Fase 5: Finalização
+
 - Atualização da documentação
 - Commit das mudanças
 - Deploy de teste

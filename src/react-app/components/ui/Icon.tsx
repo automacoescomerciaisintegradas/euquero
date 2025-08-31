@@ -1,10 +1,10 @@
-import { 
-  Heart, 
-  Zap, 
-  BarChart3, 
-  Menu, 
-  X, 
-  Mail, 
+import {
+  Heart,
+  Zap,
+  BarChart3,
+  Menu,
+  X,
+  Mail,
   Phone,
   MessageCircle,
   MessageSquare,
@@ -13,8 +13,8 @@ import {
   Play,
   ExternalLink,
   CheckCircle,
-  LucideIcon 
-} from 'lucide-react';
+  LucideIcon,
+} from "lucide-react";
 
 interface IconProps {
   name: string;
@@ -36,12 +36,12 @@ const iconMap: Record<string, LucideIcon> = {
   Video,
   Play,
   ExternalLink,
-  CheckCircle
+  CheckCircle,
 };
 
-const Icon = ({ name, size = 24, className = '' }: IconProps) => {
+const Icon = ({ name, size = 24, className = "" }: IconProps) => {
   const IconComponent = iconMap[name];
-  
+
   if (!IconComponent) {
     console.warn(`Ícone "${name}" não encontrado`);
     return null;

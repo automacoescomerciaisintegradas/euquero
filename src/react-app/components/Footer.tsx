@@ -1,4 +1,4 @@
-import Container from './ui/Container';
+import Container from "./ui/Container";
 
 const Footer = () => {
   return (
@@ -9,10 +9,16 @@ const Footer = () => {
             Copyright © 2024 - 2025 Todos os direitos reservados.
           </p>
           <div className="flex space-x-6">
-            <a href="#termos" className="text-sm hover:text-white transition-colors">
+            <a
+              href="#termos"
+              className="text-sm hover:text-white transition-colors"
+            >
               Termos de Uso
             </a>
-            <a href="#privacidade" className="text-sm hover:text-white transition-colors">
+            <a
+              href="#privacidade"
+              className="text-sm hover:text-white transition-colors"
+            >
               Política de Privacidade
             </a>
           </div>

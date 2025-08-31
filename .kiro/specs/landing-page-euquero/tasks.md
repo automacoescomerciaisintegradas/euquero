@@ -1,21 +1,15 @@
 # Plano de Implementação - Landing Page EuQuero
 
 - [x] 1. Configurar estrutura base e tipos compartilhados
-
-
   - Criar tipos TypeScript para componentes da landing page
   - Definir interfaces para dados estáticos (hero, features, pricing, contato)
   - Configurar dados mock em português brasileiro
   - _Requisitos: 1.1, 2.1, 3.1, 4.1, 5.1_
 
-
-
 - [ ] 2. Implementar componentes base reutilizáveis
   - Criar componente Button com variações (primary, secondary, outline)
   - Implementar componente Card para features e pricing
   - Desenvolver componente Container responsivo
-
-
 
   - Criar wrapper Icon para Lucide React
   - _Requisitos: 6.1, 6.3_
@@ -23,22 +17,16 @@
 - [ ] 3. Desenvolver Header component
   - Implementar navegação principal com links em português
 
-
-
   - Adicionar logo/marca EuQuero
   - Criar menu hambúrguer para dispositivos móveis
   - Implementar botão "Entrar" com redirecionamento
   - Adicionar testes unitários para Header
   - _Requisitos: 1.1, 1.2, 1.3_
 
-
-
-
 - [ ] 4. Criar Hero Section component
   - Implementar seção principal com título e subtítulo em português
   - Adicionar botão CTA "Comece Agora" com redirecionamento
   - Incluir layout responsivo com imagem/ilustração
-
 
   - Implementar animações sutis de entrada
   - Escrever testes para funcionalidade do CTA
@@ -62,7 +50,7 @@
   - _Requisitos: 4.1, 4.2, 4.3, 4.4_
 
 - [ ] 7. Desenvolver Footer component
-  - Implementar seção "📞 Suporte" 
+  - Implementar seção "📞 Suporte"
   - Adicionar email clicável "📧 Email: contato@fcaq.com.br"
   - Criar link funcional "💬 Telegram: https://t.me/+9cdym9gvPQ9iOWNh"
   - Implementar link WhatsApp "📱 WhatsApp: +55 88 988712711"
