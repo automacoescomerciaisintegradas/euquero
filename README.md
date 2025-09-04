@@ -24,6 +24,10 @@ Este projeto utiliza uma arquitetura limpa e independente, sem dependências de 
 npm install
 ```
 
+### Configuração do Sistema de Autenticação OAuth
+
+Para que o sistema de autenticação OAuth funcione corretamente, você precisa configurar as credenciais dos provedores (Google e GitHub). Veja o guia completo em [docs/oauth-setup.md](docs/oauth-setup.md).
+
 ### Desenvolvimento Local
 
 ```bash
@@ -70,6 +74,7 @@ src/
 - ✅ Suporte para lives e transmissões
 - ✅ Integração com WhatsApp, Telegram e email
 - ✅ Arquitetura serverless escalável
+- ✅ Sistema de autenticação OAuth (Google e GitHub)
 
 ## Tecnologias Utilizadas
 

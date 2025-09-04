@@ -6,4 +6,10 @@ declare global {
   const fetch: typeof globalThis.fetch;
   const Response: typeof globalThis.Response;
   const Request: typeof globalThis.Request;
+  
+  // Variáveis de ambiente
+  const GOOGLE_CLIENT_ID: string | undefined;
+  const GOOGLE_CLIENT_SECRET: string | undefined;
+  const GITHUB_CLIENT_ID: string | undefined;
+  const GITHUB_CLIENT_SECRET: string | undefined;
 }
