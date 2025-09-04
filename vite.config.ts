@@ -7,7 +7,9 @@ export default defineConfig(({ mode }) => {
   
   return {
     define: {
-      'process.env': env
+      'process.env.NODE_ENV': JSON.stringify(mode),
+      'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || ''),
+      'process.env.VITE_APP_URL': JSON.stringify(env.VITE_APP_URL || ''),
     },
     plugins: [react()],
     server: {

@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Shadcn Component Usage Guide",
+  "description": "Monitors component files and provides guidance on using shadcn components through MCP server, applying proper planning and implementation patterns",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "src/react-app/components/**/*.tsx",
+      "src/react-app/pages/**/*.tsx",
+      "src/react-app/**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A React component file has been modified. Please review the changes and ensure:\n\nUSAGE RULE: When asked to use shadcn components, use the MCP server to access the component library.\n\nPLANNING RULE: When planning anything related to shadcn:\n- Use the MCP server during planning phase\n- Apply shadcn components wherever components are applicable  \n- Use whole blocks where possible (e.g., login page, calendar, forms)\n- Consider the full component ecosystem available\n\nIMPLEMENTATION RULE: When implementing:\n1. First call the demo tool to see how the component is used\n2. Then implement it correctly following the demonstrated patterns\n3. Ensure proper imports and component structure\n4. Follow shadcn/ui conventions and best practices\n\nReview the modified file and provide guidance on:\n- Whether shadcn components should be used instead of custom components\n- If existing shadcn usage follows best practices\n- Suggestions for using whole component blocks where applicable\n- Proper implementation patterns if shadcn components are being added\n\nFocus on Portuguese Brazilian interface standards and ensure components align with the EuQuero project requirements."
+  }
+}

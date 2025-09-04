@@ -2,6 +2,7 @@ import Header from "@/react-app/components/Header";
 import HeroSection from "@/react-app/components/HeroSection";
 import FeaturesSection from "@/react-app/components/FeaturesSection";
 import WhatsAppFloat from "@/react-app/components/WhatsAppFloat";
+import AutomationPreviewSection from "@/react-app/components/AutomationPreviewSection";
 
 export default function TestWhatsApp() {
   return (
@@ -11,6 +12,9 @@ export default function TestWhatsApp() {
 
       {/* Hero Section */}
       <HeroSection />
+
+      {/* Automation Preview Section */}
+      <AutomationPreviewSection />
 
       {/* Features Section */}
       <FeaturesSection />

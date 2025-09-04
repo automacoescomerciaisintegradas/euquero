@@ -19,6 +19,9 @@ export const landingPageData: LandingPageConfig = {
         "Envio de mensagens via DM automatizado",
         "Múltiplos links e imagens no inbox",
         "Configuração em 3 passos simples",
+        "Integração com sistema de pagamento PIX",
+        "Relatórios de engajamento em tempo real",
+        "Personalização avançada por tipo de conteúdo"
       ],
       highlight: "Teste GRÁTIS com 10 créditos",
       videoUrl: "https://youtu.be/yjKN7Cc7uiw",
@@ -33,6 +36,9 @@ export const landingPageData: LandingPageConfig = {
         "Fluxo de vendas automático no inbox",
         "Respostas para perguntas frequentes",
         "Atendimento 24/7 sem parar",
+        "Integração com WhatsApp e Telegram",
+        "Catálogo de produtos automatizado",
+        "Gatilhos por palavras-chave específicas"
       ],
       highlight: "1.000 créditos de cortesia",
       videoUrl: "https://youtu.be/yjKN7Cc7uiw",
@@ -47,6 +53,9 @@ export const landingPageData: LandingPageConfig = {
         "Envio de links de compra automático",
         "Cupons de desconto no chat ao vivo",
         "Máquina de conversão 100% automática",
+        "Integração com carrinho de compras",
+        "Análise de sentimentos em comentários",
+        "Engajamento programado durante transmissão"
       ],
       highlight: "Venda mais ao vivo",
       videoUrl: "https://youtu.be/Zy2bSpZtULI",

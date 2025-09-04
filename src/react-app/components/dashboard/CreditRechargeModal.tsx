@@ -8,6 +8,7 @@ interface CreditRechargeModalProps {
   onRecharge: (data: CreditRechargeData) => Promise<void>;
   currentBalance: number;
   onShowPix: (amount: number) => void;
+  userId: string;
 }
 
 const paymentMethods: PaymentMethod[] = [
@@ -26,9 +27,10 @@ export default function CreditRechargeModal({
   onClose, 
   onRecharge, 
   currentBalance,
-  onShowPix
+  onShowPix,
+  userId
 }: CreditRechargeModalProps) {
-  const [formData, setFormData] = useState<CreditRechargeData>({
+  const [formData, setFormData] = useState<Omit<CreditRechargeData, 'userId'>>({
     amount: 50,
     paymentMethod: 'pix',
   });
@@ -47,7 +49,10 @@ export default function CreditRechargeModal({
     setLoading(true);
 
     try {
-      const validatedData = CreditRechargeSchema.parse(formData);
+      const validatedData = CreditRechargeSchema.parse({
+        ...formData,
+        userId
+      });
       await onRecharge(validatedData);
       onShowPix(validatedData.amount);
       onClose();

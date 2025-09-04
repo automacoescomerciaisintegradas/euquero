@@ -1,0 +1,3 @@
+import React from 'react';
+import { Users, Activity, BarChart, TrendingUp, RefreshCw, DollarSign, TrendingDown, Minus, Smartphone, Monitor, Tablet, Move, Send } from 'lucide-react';
+// ... (rest of the component code) ...

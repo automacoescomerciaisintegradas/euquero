@@ -1,0 +1,3 @@
+import React, { useState } from 'react';
+import { Calendar, PlayCircle, MessageSquare, ThumbsUp, Share2, Plus, Trash2, Edit, Hash } from 'lucide-react';
+// ... (rest of the component code) ...

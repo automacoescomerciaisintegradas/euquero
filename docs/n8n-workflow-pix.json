@@ -1,0 +1,186 @@
+{
+  "name": "EuQuero - PIX Payment Confirmation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "euquero",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "webhook-pix",
+      "name": "Webhook PIX",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "euquero-pix-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validar se é evento PIX_PAYMENT_CONFIRMED\nconst data = items[0].json;\n\nif (data.event !== 'PIX_PAYMENT_CONFIRMED') {\n  throw new Error('Evento inválido: ' + data.event);\n}\n\n// Validar campos obrigatórios\nif (!data.user_id || !data.payment_id || !data.amount) {\n  throw new Error('Dados obrigatórios ausentes');\n}\n\n// Formatar dados para o próximo nó\nreturn [{\n  json: {\n    user_id: data.user_id,\n    payment_id: data.payment_id,\n    amount: data.amount,\n    timestamp: data.timestamp,\n    formatted_amount: `R$ ${data.amount.toFixed(2).replace('.', ',')}`,\n    formatted_date: new Date(data.timestamp).toLocaleString('pt-BR')\n  }\n}];"
+      },
+      "id": "validate-data",
+      "name": "Validar Dados",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.user_id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "check-user",
+      "name": "Verificar Usuário",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Simular busca de dados do usuário\n// Em produção, conectar com banco de dados real\n\nconst userId = items[0].json.user_id;\n\n// Mock de dados do usuário\nconst mockUsers = {\n  'user_123': {\n    name: 'João Silva',\n    email: 'joao@exemplo.com',\n    phone: '(11) 99999-9999'\n  },\n  'user_456': {\n    name: 'Maria Santos',\n    email: 'maria@exemplo.com', \n    phone: '(11) 88888-8888'\n  }\n};\n\nconst userData = mockUsers[userId] || {\n  name: 'Cliente',\n  email: 'cliente@exemplo.com',\n  phone: '(11) 00000-0000'\n};\n\nreturn [{\n  json: {\n    ...items[0].json,\n    user_name: userData.name,\n    user_email: userData.email,\n    user_phone: userData.phone\n  }\n}];"
+      },
+      "id": "get-user-data",
+      "name": "Buscar Dados Usuário",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@euquero.com.br",
+        "toEmail": "={{ $json.user_email }}",
+        "subject": "Pagamento PIX Confirmado ✅ - EuQuero",
+        "text": "Olá {{ $json.user_name }},\n\nConfirmamos o recebimento do seu pagamento PIX!\n\n📋 Detalhes do Pagamento:\n• Valor: {{ $json.formatted_amount }}\n• ID do Pagamento: {{ $json.payment_id }}\n• Data: {{ $json.formatted_date }}\n\n✅ Seu saldo já foi atualizado no painel.\n\nPara acessar sua conta, visite: https://euquero.com.br/dashboard\n\nSe você tem alguma dúvida, entre em contato conosco:\n📧 Email: contato@fcaq.com.br\n💬 Telegram: https://t.me/+9cdym9gvPQ9iOWNh\n📱 WhatsApp: +55 88 988712711\n\nAtenciosamente,\nEquipe EuQuero\n\n---\nEste é um email automático, não responda a esta mensagem.",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "send-email",
+      "name": "Enviar Email Confirmação",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Log de sucesso\nconst data = items[0].json;\n\nconsole.log('✅ Email de confirmação PIX enviado:', {\n  user_id: data.user_id,\n  user_email: data.user_email,\n  payment_id: data.payment_id,\n  amount: data.amount,\n  timestamp: new Date().toISOString()\n});\n\nreturn [{\n  json: {\n    status: 'success',\n    message: 'Email enviado com sucesso',\n    user_id: data.user_id,\n    payment_id: data.payment_id,\n    processed_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "log-success",
+      "name": "Log Sucesso",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Log de erro - usuário não encontrado\nconst data = items[0].json;\n\nconsole.error('❌ Usuário não encontrado para PIX:', {\n  user_id: data.user_id,\n  payment_id: data.payment_id,\n  amount: data.amount,\n  timestamp: new Date().toISOString()\n});\n\nreturn [{\n  json: {\n    status: 'error',\n    message: 'Usuário não encontrado',\n    user_id: data.user_id,\n    payment_id: data.payment_id,\n    error_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "log-error",
+      "name": "Log Erro",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Resposta final do webhook\nreturn [{\n  json: {\n    received: true,\n    processed_at: new Date().toISOString(),\n    message: 'Webhook PIX processado com sucesso'\n  }\n}];"
+      },
+      "id": "webhook-response",
+      "name": "Resposta Webhook",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 500]
+    }
+  ],
+  "connections": {
+    "Webhook PIX": {
+      "main": [
+        [
+          {
+            "node": "Validar Dados",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resposta Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Dados": {
+      "main": [
+        [
+          {
+            "node": "Verificar Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Usuário": {
+      "main": [
+        [
+          {
+            "node": "Buscar Dados Usuário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Dados Usuário": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Confirmação": {
+      "main": [
+        [
+          {
+            "node": "Log Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-09T17:00:00.000Z",
+      "updatedAt": "2025-01-09T17:00:00.000Z",
+      "id": "pix-webhook",
+      "name": "PIX Webhook"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-09T17:00:00.000Z",
+  "versionId": "1"
+}

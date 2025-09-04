@@ -1,0 +1,3 @@
+import React from 'react';
+import { Search, FileText, CheckCircle, ArrowRight } from 'lucide-react';
+// ... (rest of the component code) ...

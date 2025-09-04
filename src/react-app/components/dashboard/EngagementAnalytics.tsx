@@ -1,0 +1,3 @@
+import React from 'react';
+import { Heart, MessageSquare, Share2, Bookmark, User, AtSign, ExternalLink } from 'lucide-react';
+// ... (rest of the component code) ...

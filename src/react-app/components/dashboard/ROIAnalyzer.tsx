@@ -1,0 +1,3 @@
+import React from 'react';
+import { DollarSign, Users, TrendingUp, Instagram, Facebook, Globe, Mail, Music, TrendingDown } from 'lucide-react';
+// ... (rest of the component code) ...

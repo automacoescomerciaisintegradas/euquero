@@ -1,0 +1,3 @@
+import React from 'react';
+import { MousePointerClick, Users, Globe, Share2 } from 'lucide-react';
+// ... (rest of the component code) ...

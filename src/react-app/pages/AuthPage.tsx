@@ -14,17 +14,27 @@ export default function AuthPage() {
     setMessage(null);
 
     try {
-      // Simular login bem-sucedido para demo
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-      setMessage({ type: 'success', text: 'Login realizado com sucesso!' });
+      const result = await response.json();
 
-      // Redirecionar para dashboard
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
+      if (response.ok && result.success) {
+        setMessage({ type: 'success', text: result.message || 'Login realizado com sucesso!' });
 
-    } catch {
+        // Redirecionar para dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Erro ao fazer login. Tente novamente.' });
+      }
+    } catch (error) {
       setMessage({ type: 'error', text: 'Erro de conexão. Tente novamente.' });
     } finally {
       setLoading(false);
@@ -36,16 +46,26 @@ export default function AuthPage() {
     setMessage(null);
 
     try {
-      // Simular cadastro bem-sucedido para demo
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setMessage({
-        type: 'success',
-        text: 'Cadastro realizado com sucesso! Verifique seu email para confirmar a conta.'
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
-      setActiveTab('login');
 
-    } catch {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setMessage({
+          type: 'success',
+          text: result.message || 'Cadastro realizado com sucesso! Verifique seu email para confirmar a conta.'
+        });
+        setActiveTab('login');
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Erro ao fazer cadastro. Tente novamente.' });
+      }
+    } catch (error) {
       setMessage({ type: 'error', text: 'Erro de conexão. Tente novamente.' });
     } finally {
       setLoading(false);
@@ -134,15 +154,7 @@ export default function AuthPage() {
         </div>
 
         {/* Links */}
-        <div className="mt-6 text-center space-y-2">
-          <div>
-            <a
-              href="/dashboard"
-              className="text-sm text-green-600 hover:text-green-800 hover:underline font-medium"
-            >
-              🚀 Acessar Dashboard (Demo)
-            </a>
-          </div>
+        <div className="mt-6 text-center">
           <div>
             <a
               href="/"

@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Monitor de Texto em Português",
+  "description": "Monitora arquivos de código para garantir que todo texto da interface, mensagens e conteúdo estejam em português brasileiro",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "src/**/*.tsx",
+      "src/**/*.ts",
+      "src/**/*.jsx",
+      "src/**/*.js",
+      "index.html",
+      "README.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analise os arquivos modificados e verifique se todo o texto da interface do usuário, mensagens de erro, validação, botões, labels, placeholders e conteúdo estão em português brasileiro. Se encontrar texto em inglês ou outro idioma que deveria estar em português, sugira as correções necessárias. Considere especialmente:\n\n1. Textos de interface (botões, labels, placeholders)\n2. Mensagens de validação e erro\n3. Conteúdo de páginas e componentes\n4. Comentários importantes para o usuário\n5. Documentação voltada ao usuário final\n\nForneça sugestões específicas de tradução mantendo o contexto técnico apropriado e seguindo os padrões estabelecidos no projeto EuQuero."
+  }
+}

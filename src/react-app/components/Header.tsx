@@ -6,8 +6,8 @@ import Icon from "./ui/Icon";
 const navigationItems = [
   { name: "Como Funciona", href: "#como-funciona" },
   { name: "Benefícios", href: "#beneficios" },
+  { name: "Automação", href: "/automacao" },
   { name: "Dúvidas Frequentes", href: "#faq" },
-  { name: "Blog", href: "#blog" },
 ];
 
 const Header = () => {

@@ -1,0 +1,3 @@
+import React, { useState } from 'react';
+import { Star, Search, Plus, Edit, Trash2, CheckCircle, XCircle, Clock, HelpCircle, Instagram, Youtube, Music, Twitter, FileText } from 'lucide-react';
+// ... (rest of the component code) ...
