@@ -7,7 +7,7 @@ export interface User {
   email: string;
   name?: string;
   phone?: string;
-  provider: "email" | "google" | "github";
+  provider: string;
   providerId?: string;
   emailVerified: boolean;
   subscription_status?: SubscriptionStatus;
