@@ -10,7 +10,6 @@ export async function initializeDatabase(DB: D1Database): Promise<void> {
     `CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
-      password_hash TEXT,
       name TEXT,
       phone TEXT,
       provider TEXT NOT NULL,
@@ -59,9 +58,7 @@ export async function initializeDatabase(DB: D1Database): Promise<void> {
 
 // Funções de Usuário
 
-export type UserWithPasswordHash = User & { password_hash: string | null };
-
-export async function createUser(DB: D1Database, user: Omit<UserWithPasswordHash, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+export async function createUser(DB: D1Database, user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
   const userId = `user_${Date.now()}${Math.random().toString(36).slice(2, 9)}`;
   const now = new Date().toISOString();
   
@@ -79,13 +76,12 @@ export async function createUser(DB: D1Database, user: Omit<UserWithPasswordHash
   };
 
   await DB.prepare(
-    `INSERT INTO users (id, email, password_hash, name, phone, provider, provider_id, email_verified, subscription_status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO users (id, email, name, phone, provider, provider_id, email_verified, subscription_status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
   .bind(
     newUser.id,
     newUser.email,
-    user.password_hash,
     newUser.name || null,
     newUser.phone || null,
     newUser.provider,
@@ -100,9 +96,15 @@ export async function createUser(DB: D1Database, user: Omit<UserWithPasswordHash
   return newUser;
 }
 
-export async function getUserByEmail(DB: D1Database, email: string): Promise<UserWithPasswordHash | null> {
-  const result = await DB.prepare("SELECT *, password_hash FROM users WHERE email = ?").bind(email).first<UserWithPasswordHash>();
-  return result;
+export async function getUserByEmail(DB: D1Database, email: string): Promise<User | null> {
+  const result = await DB.prepare("SELECT id, email, name, phone, provider, provider_id as providerId, email_verified as emailVerified, subscription_status, created_at as createdAt, updated_at as updatedAt FROM users WHERE email = ?").bind(email).first<User>();
+  if (!result) return null;
+  return {
+      ...result,
+      emailVerified: Boolean(result.emailVerified),
+      createdAt: new Date(result.createdAt),
+      updatedAt: new Date(result.updatedAt)
+  };
 }
 
 export async function getUserById(DB: D1Database, userId: string): Promise<User | null> {
@@ -116,7 +118,7 @@ export async function getUserById(DB: D1Database, userId: string): Promise<User 
   };
 }
 
-export async function createOrUpdateUserFromOAuth(DB: D1Database, profile: { email: string; name?: string; provider: 'google' | 'github'; providerId: string }): Promise<User> {
+export async function createOrUpdateUser(DB: D1Database, profile: { email: string; name?: string; provider: string; providerId: string }): Promise<User> {
     const existingUser = await DB.prepare("SELECT * FROM users WHERE provider = ? AND provider_id = ?").bind(profile.provider, profile.providerId).first<User>();
 
     if (existingUser) {
@@ -136,7 +138,6 @@ export async function createOrUpdateUserFromOAuth(DB: D1Database, profile: { ema
         provider: profile.provider,
         providerId: profile.providerId,
         emailVerified: true, // OAuth emails are typically verified
-        password_hash: null,
         phone: undefined
     });
 
