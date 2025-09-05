@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Send, Play, BarChart3 } from 'lucide-react';
+import { Send, Play, BarChart3 } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;

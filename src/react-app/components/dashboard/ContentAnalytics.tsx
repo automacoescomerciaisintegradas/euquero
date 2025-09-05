@@ -1,3 +1,2 @@
 import React from 'react';
-import { ThumbsUp, MessageSquare, Share2, Eye, Hash } from 'lucide-react';
 // ... (rest of the component code) ...

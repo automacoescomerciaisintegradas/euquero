@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Instagram, 
-  User, 
-  Lock, 
   CheckCircle, 
   AlertCircle, 
   Upload, 
@@ -10,9 +8,7 @@ import {
   Hash,
   MessageSquare,
   Bot,
-  Video,
-  Settings,
-  BarChart3
+  Video
 } from 'lucide-react';
 
 interface InstagramAccount {
@@ -102,8 +98,8 @@ export const InstagramSetup: React.FC<InstagramSetupProps> = ({
         setAccount({ connected: false });
         onConnectionChange?.(false);
       }
-    } catch (err) {
-      console.error('Erro ao buscar informações da conta:', err);
+    } catch (_err) {
+      console.error('Erro ao buscar informações da conta:', _err);
       setAccount({ connected: false });
       onConnectionChange?.(false);
     }
@@ -132,7 +128,7 @@ export const InstagramSetup: React.FC<InstagramSetupProps> = ({
       } else {
         setError(data.message || 'Erro ao desconectar conta');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Erro de conexão');
     } finally {
       setLoading(false);
@@ -175,7 +171,7 @@ export const InstagramSetup: React.FC<InstagramSetupProps> = ({
       } else {
         setError(data.message || 'Erro ao enviar foto');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Erro de conexão');
     } finally {
       setLoading(false);
@@ -210,7 +206,7 @@ export const InstagramSetup: React.FC<InstagramSetupProps> = ({
 
   useEffect(() => {
     fetchAccountInfo();
-  }, [userId]);
+  }, [userId, fetchAccountInfo]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">

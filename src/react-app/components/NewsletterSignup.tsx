@@ -29,7 +29,7 @@ const NewsletterSignup = () => {
       
       setMessage({ type: "success", text: "Obrigado por se inscrever! Em breve você receberá nossas novidades." });
       setEmail("");
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: "error", text: "Ocorreu um erro. Por favor, tente novamente." });
     } finally {
       setIsLoading(false);
