@@ -365,3 +365,11 @@ export const ScheduledPostSchema = z.object({
 export type CommentAutomationData = z.infer<typeof CommentAutomationSchema>;
 export type DMAutomationData = z.infer<typeof DMAutomationSchema>;
 export type ScheduledPostData = z.infer<typeof ScheduledPostSchema>;
+
+export interface Resume {
+  id: string;
+  userId: string;
+  fileName: string;
+  filePath: string;
+  createdAt: Date;
+}

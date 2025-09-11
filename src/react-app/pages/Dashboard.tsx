@@ -119,6 +119,33 @@ export default function Dashboard() {
   const handleLogout = () => { window.location.href = '/'; };
   const handleExportTransactions = () => { console.log('Exportando transações...'); };
 
+  const handlePaymentConfirmed = async (receiptFile: File) => {
+    // TODO: Get the real user from the session
+    const userId = user.id;
+
+    const formData = new FormData();
+    formData.append("file", receiptFile);
+    formData.append("userId", userId);
+
+    try {
+      const response = await fetch("/api/resumes", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Comprovante enviado com sucesso!");
+        setIsPixModalOpen(false);
+      } else {
+        const error = await response.json();
+        alert(`Erro ao enviar comprovante: ${error.error}`);
+      }
+    } catch (error) {
+      console.error("Erro ao enviar comprovante:", error);
+      alert("Erro ao enviar comprovante. Tente novamente mais tarde.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -149,7 +176,7 @@ export default function Dashboard() {
 
       {/* Modals */}
       <CreditRechargeModal isOpen={isRechargeModalOpen} onClose={() => setIsRechargeModalOpen(false)} onRecharge={handleRecharge} currentBalance={balance.balance} onShowPix={handleShowPix} userId={user.id} />
-      <PixPaymentModal isOpen={isPixModalOpen} onClose={() => setIsPixModalOpen(false)} amount={pixAmount} pixKey="" pixEmail="" pixCode="" onPaymentConfirmed={() => {}} />
+      <PixPaymentModal isOpen={isPixModalOpen} onClose={() => setIsPixModalOpen(false)} amount={pixAmount} pixKey="" pixEmail="" pixCode="" onPaymentConfirmed={handlePaymentConfirmed} />
     </div>
   );
 }

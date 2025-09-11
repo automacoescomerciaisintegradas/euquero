@@ -1,15 +1,15 @@
-// Definições de tipos para o ambiente Cloudflare Workers
 
-// Extensão dos tipos globais para Cloudflare Workers
-declare global {
-  const console: Console;
-  const fetch: typeof globalThis.fetch;
-  const Response: typeof globalThis.Response;
-  const Request: typeof globalThis.Request;
-  
-  // Variáveis de ambiente
-  const GOOGLE_CLIENT_ID: string | undefined;
-  const GOOGLE_CLIENT_SECRET: string | undefined;
-  const GITHUB_CLIENT_ID: string | undefined;
-  const GITHUB_CLIENT_SECRET: string | undefined;
+import type { D1Database } from "@cloudflare/workers-types";
+
+export interface Env {
+  DB: D1Database;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
+  JWT_SECRET: string;
+  N8N_WEBHOOK_URL: string;
+  INTERNAL_SECRET: string;
+  SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
 }

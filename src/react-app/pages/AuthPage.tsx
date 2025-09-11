@@ -80,6 +80,18 @@ export default function AuthPage() {
     window.location.href = '/api/auth/github';
   };
 
+  const handleFacebookLogin = () => {
+    window.location.href = '/api/auth/facebook';
+  };
+
+  const handleWhatsAppLogin = () => {
+    // Para o WhatsApp, vamos abrir diretamente o chat
+    const phoneNumber = '5588988712711'; // Número do WhatsApp configurado
+    const message = encodeURIComponent('Olá! Gostaria de fazer login na plataforma EuQuero.');
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -136,6 +148,8 @@ export default function AuthPage() {
                   loading={loading}
                   onGoogleLogin={handleGoogleLogin}
                   onGitHubLogin={handleGitHubLogin}
+                  onFacebookLogin={handleFacebookLogin}
+                  onWhatsAppLogin={handleWhatsAppLogin}
                 />
               </div>
             </div>
@@ -147,6 +161,8 @@ export default function AuthPage() {
                   loading={loading}
                   onGoogleLogin={handleGoogleLogin}
                   onGitHubLogin={handleGitHubLogin}
+                  onFacebookLogin={handleFacebookLogin}
+                  onWhatsAppLogin={handleWhatsAppLogin}
                 />
               </div>
             </div>

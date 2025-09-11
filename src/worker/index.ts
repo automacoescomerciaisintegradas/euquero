@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { BetterAuth, createAdapter } from "better-auth";
 import { github, google } from "better-auth/providers";
+import { facebookAuth } from "@hono/oauth-providers/facebook";
 import { createOrUpdateUser, getUserByEmail, getUserById } from "./db";
-import type { D1Database } from "@cloudflare/workers-types";
 import {
   type AuthResponse,
   type User,
@@ -21,18 +21,10 @@ import {
   processRetryQueue,
   creditUserBalance,
 } from "./webhook-utils";
-
-// Define bindings and environment variables
-interface Env {
-  DB: D1Database;
-  GOOGLE_CLIENT_ID: string;
-  GOOGLE_CLIENT_SECRET: string;
-  GITHUB_CLIENT_ID: string;
-  GITHUB_CLIENT_SECRET: string;
-  JWT_SECRET: string;
-  N8N_WEBHOOK_URL: string;
-  INTERNAL_SECRET: string;
-}
+import { getSupabaseClient } from "./supabase";
+import { createResume } from "./supabase-resumes";
+import type { Env } from "./env";
+import type { FacebookUser } from "@hono/oauth-providers/facebook/types";
 
 const app = new Hono<{
   Bindings: Env;
@@ -117,6 +109,44 @@ app.get("/api/credits/transactions/:userId", async (_c) => { /* ... existing log
 app.post("/api/credits/generate-pix", async (_c) => { /* ... existing logic ... */ });
 app.post("/api/credits/recharge", async (_c) => { /* ... existing logic ... */ });
 
+app.post("/api/resumes", async (c) => {
+  const supabase = getSupabaseClient(c.env);
+  const formData = await c.req.formData();
+  const userId = formData.get("userId") as string;
+  const file = formData.get("file") as File;
+
+  if (!userId || !file) {
+    return c.json({ error: "Missing userId or file" }, 400);
+  }
+
+  const fileExtension = file.name.split('.').pop();
+  const fileName = `${userId}_${Date.now()}.${fileExtension}`;
+  const filePath = `resumes/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("resumes")
+    .upload(filePath, file);
+
+  if (uploadError) {
+    return c.json({ error: uploadError.message }, 500);
+  }
+
+  try {
+    const resume = await createResume(c.env, {
+      userId,
+      fileName: file.name,
+      filePath,
+    });
+
+    return c.json(resume);
+  } catch (error: any) {
+    // If resume record creation fails, try to delete the uploaded file
+    await supabase.storage.from("resumes").remove([filePath]);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+
 // --- WEBHOOK ROUTES ---
 app.post("/api/webhooks/pix", async (c) => {
   try {
@@ -167,6 +197,40 @@ app.post("/api/automation/dm-rules", async (_c) => { /* ... existing mock logic 
 app.get("/api/automation/dm-rules/:userId", async (_c) => { /* ... existing mock logic ... */ });
 app.put("/api/automation/dm-rules/:ruleId", async (_c) => { /* ... existing mock logic ... */ });
 app.delete("/api/automation/dm-rules/:ruleId", async (_c) => { /* ... existing mock logic ... */ });
+
+// --- FACEBOOK AUTHENTICATION ROUTE ---
+// Rota de autenticação do Facebook
+app.use("/api/auth/facebook", facebookAuth({
+  client_id: c.env.FACEBOOK_CLIENT_ID,
+  client_secret: c.env.FACEBOOK_CLIENT_SECRET,
+  redirect_uri: c.env.FACEBOOK_REDIRECT_URI,
+  scope: ["email", "public_profile"],
+  fields: ["id", "name", "email", "picture"]
+}));
+
+app.get("/api/auth/facebook/callback", async (c) => {
+  const user = c.get("user-facebook") as FacebookUser | undefined;
+  
+  if (!user) {
+    return c.json({ error: "Falha na autenticação com Facebook" }, 400);
+  }
+
+  try {
+    // Criar ou atualizar usuário no banco de dados
+    const dbUser = await createOrUpdateUser(c.env.DB, {
+      email: user.email || `${user.id}@facebook.com`,
+      name: user.name,
+      provider: "facebook",
+      providerId: user.id,
+    });
+
+    // Redirecionar para o dashboard após login bem-sucedido
+    return c.redirect("/dashboard");
+  } catch (error) {
+    console.error("Erro ao criar/atualizar usuário do Facebook:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
 
 // --- FALLBACK ROUTE ---
 app.get("*", (c) => c.text("Not found", 404));

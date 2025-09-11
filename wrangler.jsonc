@@ -19,4 +19,13 @@
       "database_id": "0198fb6c-1c32-7775-b447-cd89271184ec",
     },
   ],
+  
+  "vars": {
+    "GOOGLE_CLIENT_ID": "28151289277-nn0l33epeej03gqo8dvu8lqn0ik0npmf.apps.googleusercontent.com",
+    "GOOGLE_CLIENT_SECRET": "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",
+    "GITHUB_CLIENT_ID": "Ov23li5tzUSPN8b0LwrC",
+    "GITHUB_CLIENT_SECRET": "ff57fb014e615e1d2d0513b4719807ad74841dcc",
+    "FACEBOOK_CLIENT_ID": "seu_facebook_client_id_aqui",
+    "FACEBOOK_CLIENT_SECRET": "seu_facebook_client_secret_aqui"
+  }
 }

@@ -74,7 +74,8 @@ src/
 - ✅ Suporte para lives e transmissões
 - ✅ Integração com WhatsApp, Telegram e email
 - ✅ Arquitetura serverless escalável
-- ✅ Sistema de autenticação OAuth (Google e GitHub)
+- ✅ Sistema de autenticação OAuth (Google, GitHub, Facebook)
+- ✅ Sistema de autenticação via WhatsApp
 
 ## Tecnologias Utilizadas
 
