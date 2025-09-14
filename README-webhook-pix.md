@@ -58,7 +58,7 @@ Frontend → Gateway PIX → Backend Hono → N8n → Email Cliente
 ```env
 # Adicionar no .env
 INTERNAL_SECRET=seu_segredo_interno_super_seguro_aqui_123456
-N8N_WEBHOOK_URL=https://n8n.iau2.com.br/webhook-test/euquero
+N8N_WEBHOOK_URL=https://webhook.iau2.com.br/webhook/euquero
 ```
 
 ### 2. Testar Localmente
@@ -151,7 +151,7 @@ curl -X POST http://localhost:8787/api/webhooks/pix \
 ## 🔧 Configuração do N8n
 
 ### 1. Webhook Node
-- URL: `https://n8n.iau2.com.br/webhook-test/euquero`
+- URL: `https://webhook.iau2.com.br/webhook/euquero`
 - Método: POST
 - Autenticação: Bearer Token (usar `INTERNAL_SECRET`)
 

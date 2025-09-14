@@ -1,6 +1,9 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
+type NameType = string;
+type ValueType = number;
+
 interface ContentData {
   type: string;
   count: number;
@@ -40,13 +43,13 @@ const ContentPerformance: React.FC<ContentPerformanceProps> = ({ data }) => {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="count"
-                  label={({ name, percent }) => `${name}: ${percent ? (percent * 100).toFixed(0) : '0'}%`}
+                  label={({ name, percent }: { name: NameType; percent: number }) => `${name}: ${percent ? (percent * 100).toFixed(0) : '0'}%`}
                 >
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [value, 'Quantidade']} />
+                <Tooltip formatter={(value: ValueType) => [value, 'Quantidade']} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -64,13 +67,13 @@ const ContentPerformance: React.FC<ContentPerformanceProps> = ({ data }) => {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="engagement"
-                  label={({ name, percent }) => `${name}: ${percent ? (percent * 100).toFixed(0) : '0'}%`}
+                  label={({ name, percent }: { name: NameType; percent: number }) => `${name}: ${percent ? (percent * 100).toFixed(0) : '0'}%`}
                 >
                   {data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [value, 'Engajamento']} />
+                <Tooltip formatter={(value: ValueType) => [value, 'Engajamento']} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>

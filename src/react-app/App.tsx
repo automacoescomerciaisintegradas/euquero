@@ -3,6 +3,8 @@ import TestWhatsApp from "@/react-app/pages/TestWhatsApp";
 import AuthPage from "@/react-app/pages/AuthPage";
 import Dashboard from "@/react-app/pages/Dashboard";
 import AutomationPage from "@/react-app/pages/AutomationPage";
+import PrivacyPolicy from "@/react-app/pages/PrivacyPolicy";
+import TermsOfUse from "@/react-app/pages/TermsOfUse";
 
 export default function App() {
   return (
@@ -16,6 +18,8 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/painel" element={<Dashboard />} />
         <Route path="/automacao" element={<AutomationPage />} />
+        <Route path="/privacidade" element={<PrivacyPolicy />} />
+        <Route path="/termos" element={<TermsOfUse />} />
       </Routes>
     </Router>
   );

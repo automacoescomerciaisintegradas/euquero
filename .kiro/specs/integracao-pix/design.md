@@ -456,7 +456,7 @@ MP_PUBLIC_KEY=your_mp_public_key
 MP_WEBHOOK_SECRET=your_webhook_secret
 
 # n8n Webhook
-N8N_WEBHOOK_URL=https://n8n.iau2.com.br/webhook-test/euquero
+N8N_WEBHOOK_URL=https://webhook.iau2.com.br/webhook/euquero
 N8N_WEBHOOK_SECRET=optional_secret
 
 # Database

@@ -81,13 +81,13 @@ const Footer = () => {
             <h3 className="text-white font-semibold mb-4">Legal</h3>
             <div className="space-y-2">
               <a
-                href="#termos"
+                href="/termos"
                 className="block hover:text-white transition-colors"
               >
                 Termos de Uso
               </a>
               <a
-                href="#privacidade"
+                href="/privacidade"
                 className="block hover:text-white transition-colors"
               >
                 Política de Privacidade

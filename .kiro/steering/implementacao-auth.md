@@ -98,3 +98,8 @@ src/react-app/components/auth/
 - HTTPS obrigatório
 - Tokens com expiração
 - Logout seguro (invalidação de tokens)
+
+<!-- ❌ Errado (formulário com POST)
+<form onSubmit={handleSubmit}>
+  <button type="submit">Login com Google
+</form> -->

@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { BetterAuth, createAdapter } from "better-auth";
-import { github, google } from "better-auth/providers";
+import { betterAuth } from "better-auth";
+import { google } from "better-auth/plugins/google";
+import { github } from "better-auth/plugins/github";
+import { hono } from "better-auth/hono"; // Handler específico para Hono
 import { facebookAuth } from "@hono/oauth-providers/facebook";
 import { createOrUpdateUser, getUserByEmail, getUserById } from "./db";
 import {
@@ -23,8 +25,15 @@ import {
 } from "./webhook-utils";
 import { getSupabaseClient } from "./supabase";
 import { createResume } from "./supabase-resumes";
+import { processLead, initLeadsTable } from "./lead-utils";
+import { fetchLeads, fetchLeadsStats } from "./leads-api";
 import type { Env } from "./env";
 import type { FacebookUser } from "@hono/oauth-providers/facebook/types";
+import { MercadoPagoConfig } from "mercadopago";
+import { drizzle } from 'drizzle-orm/d1';
+import * as schema from './db/schema';
+import { eq, and, desc, gt } from 'drizzle-orm';
+import type { D1Database } from '@cloudflare/workers-types';
 
 const app = new Hono<{
   Bindings: Env;
@@ -32,75 +41,329 @@ const app = new Hono<{
     user: any;
     session: any;
     auth: any;
+    db: any; // Adicionar suporte para DB Drizzle
   };
 }>();
 
-const customAdapter = (DB: D1Database) => createAdapter({
-  createUser: (user) => createOrUpdateUser(DB, user),
-  getUserByEmail: (email) => getUserByEmail(DB, email),
-  getUserById: (id) => getUserById(DB, id),
+// Inicializar Drizzle DB
+const initDb = (env: Env) => {
+  return drizzle(env.DB, { schema });
+};
+
+// Adapter corrigido para BetterAuth com Drizzle
+import type { Adapter } from "better-auth/adapter";
+
+const customAdapter = (DB: D1Database): Adapter => ({
+  createUser: async (user) => {
+    // Usar Drizzle para criar usuário
+    const db = drizzle(DB, { schema });
+    return await createUser(db, user as any); // Type assertion temporário
+  },
+  getUserByEmail: async (email) => {
+    const db = drizzle(DB, { schema });
+    return await getUserByEmail(db, email);
+  },
+  getUserById: async (id) => {
+    const db = drizzle(DB, { schema });
+    return await getUserById(db, id);
+  },
+  // Adicionar outros métodos necessários do Adapter se faltarem
+  deleteUser: async (id) => {
+    // Implementar se necessário
+    return true;
+  },
+  // Atualizar usuário com campos adicionais
+  updateUser: async (id, update) => {
+    const db = drizzle(DB, { schema });
+    const result = await db.update(schema.users)
+      .set(update)
+      .where(eq(schema.users.id, id))
+      .returning();
+    return result[0];
+  },
+  // ... outros métodos do adapter conforme docs do BetterAuth
 });
 
-app.use("*", async (c, next) => {
-  await initializeDatabase(c.env.DB);
-  const auth = c.get("auth");
-  if (auth) {
-    const session = await auth.api.getSession({
-      headers: c.req.raw.headers,
-    });
-    if (!session) {
-      c.set("user", null);
-      c.set("session", null);
-      return next();
-    }
-    c.set("user", session.user);
-    c.set("session", session.session);
-  }
+app.use('*', async (c, next) => {
+  c.set('db', initDb(c.env));
   await next();
 });
 
-app.use("/api/auth/*", async (c, next) => {
-  const auth = new BetterAuth({
-    adapter: customAdapter(c.env.DB),
-    providers: {
-      github: github({
-        clientId: c.env.GITHUB_CLIENT_ID,
-        clientSecret: c.env.GITHUB_CLIENT_SECRET,
-      }),
-      google: google({
-        clientId: c.env.GOOGLE_CLIENT_ID,
-        clientSecret: c.env.GOOGLE_CLIENT_SECRET,
-      }),
+// Configuração corrigida do BetterAuth com Hono handler
+app.route("/api/auth/*", hono(betterAuth({
+  database: c.env.DB, // Usar D1 diretamente
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
+    google: {
+      clientId: c.env.GOOGLE_CLIENT_ID!,
+      clientSecret: c.env.GOOGLE_CLIENT_SECRET!,
     },
-  });
-  c.set("auth", auth);
-  await next();
-});
+    github: {
+      clientId: c.env.GITHUB_CLIENT_ID!,
+      clientSecret: c.env.GITHUB_CLIENT_SECRET!,
+    },
+  },
+  // Funcionalidades adicionais de autenticação
+  twoFactor: {
+    enabled: true,
+    otpOptions: {
+      issuer: "EuQuero",
+    },
+  },
+  account: {
+    accountVerification: {
+      enabled: true,
+    },
+  },
+  // Adapter personalizado para D1 se necessário
+  adapter: customAdapter(c.env.DB),
+})));
 
-app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+// Rota de inicialização do Google
+app.get("/api/auth/google", async (c) => {
   const auth = c.get("auth");
   return auth.handler(c.req.raw);
 });
 
-app.use("/api/auth/*", async (c, next) => {
-  const auth = new BetterAuth({
-    adapter: customAdapter(c.env.DB),
-    providers: {
-      github: github({
-        clientId: c.env.GITHUB_CLIENT_ID,
-        clientSecret: c.env.GITHUB_CLIENT_SECRET,
-      }),
-      google: google({
-        clientId: c.env.GOOGLE_CLIENT_ID,
-        clientSecret: c.env.GOOGLE_CLIENT_SECRET,
-      }),
-    },
-  });
-  c.set("auth", auth);
-  await next();
+// Rota de callback do Google
+app.get("/api/auth/google/callback", async (c) => {
+  // BetterAuth handler cuida disso automaticamente via route
+  const auth = c.get("auth");
+  if (auth) {
+    return auth.handler(c.req.raw);
+  }
+  return c.json({ error: "Autenticação não configurada" }, 400);
 });
 
-app.on(["POST", "GET"], "/api/auth/*", async (c) => {
+// Rotas explícitas para login e registro
+app.post("/api/auth/login", async (c) => {
+  const auth = c.get("auth");
+  return auth.handler(c.req.raw);
+});
+
+app.post("/api/auth/register", async (c) => {
+  const auth = c.get("auth");
+  
+  // Capturar os dados do registro antes de processar
+  const requestData = await c.req.json();
+  
+  // Processar o registro com BetterAuth
+  const response = await auth.handler(c.req.raw);
+  
+  // Se o registro foi bem-sucedido, processar o lead
+  if (response.status === 200) {
+    // Processar o lead em background
+    c.executionCtx.waitUntil(
+      processLead(c.env, {
+        ...requestData,
+        registeredAt: new Date().toISOString()
+      })
+    );
+  }
+  
+  return response;
+});
+
+// --- PASSWORD RECOVERY ROUTES ---
+// Solicitar recuperação de senha
+app.post("/api/auth/forgot-password", async (c) => {
+  try {
+    const { email } = await c.req.json();
+    
+    if (!email) {
+      return c.json({ error: "Email é obrigatório" }, 400);
+    }
+    
+    // Verificar se o usuário existe
+    const db = c.get('db');
+    const user = await db.query.users.findFirst({
+      where: eq(schema.users.email, email)
+    });
+    
+    if (!user) {
+      // Retornar sucesso mesmo assim para segurança (não revelar se o email existe)
+      return c.json({ success: true, message: "Se o email estiver cadastrado, enviaremos instruções para recuperação da senha." });
+    }
+    
+    // Gerar token de recuperação (simulação - em produção usar tokens seguros)
+    const resetToken = crypto.randomUUID();
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+    
+    // Atualizar usuário com token de recuperação
+    await db.update(schema.users)
+      .set({ 
+        resetToken,
+        resetTokenExpiry: resetTokenExpiry.toISOString()
+      })
+      .where(eq(schema.users.id, user.id));
+    
+    // Enviar email de recuperação (simulação)
+    console.log(`Enviando email de recuperação para ${email} com token ${resetToken}`);
+    
+    return c.json({ 
+      success: true, 
+      message: "Se o email estiver cadastrado, enviaremos instruções para recuperação da senha." 
+    });
+  } catch (error) {
+    console.error("Erro ao solicitar recuperação de senha:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Redefinir senha
+app.post("/api/auth/reset-password", async (c) => {
+  try {
+    const { token, newPassword } = await c.req.json();
+    
+    if (!token || !newPassword) {
+      return c.json({ error: "Token e nova senha são obrigatórios" }, 400);
+    }
+    
+    // Validar nova senha
+    if (newPassword.length < 8) {
+      return c.json({ error: "A senha deve ter pelo menos 8 caracteres" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Verificar token
+    const user = await db.query.users.findFirst({
+      where: and(
+        eq(schema.users.resetToken, token),
+        gt(schema.users.resetTokenExpiry, new Date().toISOString())
+      )
+    });
+    
+    if (!user) {
+      return c.json({ error: "Token inválido ou expirado" }, 400);
+    }
+    
+    // Hash da nova senha (simulação - em produção usar bcrypt ou similar)
+    const hashedPassword = btoa(newPassword); // Função de hash simples para exemplo
+    
+    // Atualizar senha e limpar token
+    await db.update(schema.users)
+      .set({ 
+        passwordHash: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null
+      })
+      .where(eq(schema.users.id, user.id));
+    
+    return c.json({ 
+      success: true, 
+      message: "Senha redefinida com sucesso" 
+    });
+  } catch (error) {
+    console.error("Erro ao redefinir senha:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// --- 2FA ROUTES ---
+// Configurar 2FA
+app.post("/api/auth/2fa/setup", async (c) => {
+  try {
+    // Verificar autenticação do usuário (simulação)
+    const userId = c.req.header('X-User-ID'); // Em produção, usar token JWT
+    
+    if (!userId) {
+      return c.json({ error: "Não autorizado" }, 401);
+    }
+    
+    const db = c.get('db');
+    
+    // Verificar se o usuário existe
+    const user = await db.query.users.findFirst({
+      where: eq(schema.users.id, userId)
+    });
+    
+    if (!user) {
+      return c.json({ error: "Usuário não encontrado" }, 404);
+    }
+    
+    // Gerar segredo para 2FA (simulação)
+    const secret = crypto.randomUUID().replace(/-/g, '').substring(0, 32);
+    
+    // Atualizar usuário com segredo 2FA
+    await db.update(schema.users)
+      .set({ 
+        twoFactorSecret: secret,
+        twoFactorEnabled: false // Ainda não está ativado até o usuário confirmar
+      })
+      .where(eq(schema.users.id, userId));
+    
+    // Gerar URI para QR Code (simulação)
+    const uri = `otpauth://totp/EuQuero:${user.email}?secret=${secret}&issuer=EuQuero`;
+    
+    return c.json({ 
+      success: true, 
+      secret,
+      uri,
+      message: "Configure seu aplicativo de autenticação com o código QR fornecido"
+    });
+  } catch (error) {
+    console.error("Erro ao configurar 2FA:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Verificar e ativar 2FA
+app.post("/api/auth/2fa/verify", async (c) => {
+  try {
+    const { token } = await c.req.json();
+    const userId = c.req.header('X-User-ID'); // Em produção, usar token JWT
+    
+    if (!userId || !token) {
+      return c.json({ error: "ID do usuário e token são obrigatórios" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Verificar se o usuário existe
+    const user = await db.query.users.findFirst({
+      where: eq(schema.users.id, userId)
+    });
+    
+    if (!user || !user.twoFactorSecret) {
+      return c.json({ error: "Configuração 2FA não encontrada" }, 404);
+    }
+    
+    // Verificar token (simulação - em produção usar uma biblioteca OTP)
+    // Aqui estamos fazendo uma verificação simples para exemplo
+    const isValid = token.length === 6 && /^\d+$/.test(token);
+    
+    if (!isValid) {
+      return c.json({ error: "Token inválido" }, 400);
+    }
+    
+    // Ativar 2FA
+    await db.update(schema.users)
+      .set({ 
+        twoFactorEnabled: true
+      })
+      .where(eq(schema.users.id, userId));
+    
+    return c.json({ 
+      success: true, 
+      message: "Autenticação de dois fatores ativada com sucesso" 
+    });
+  } catch (error) {
+    console.error("Erro ao verificar 2FA:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// --- SOCIAL AUTHENTICATION ROUTES ---
+// Rotas para OAuth explícitas
+app.get("/api/auth/google", async (c) => {
+  const auth = c.get("auth");
+  return auth.handler(c.req.raw);
+});
+
+app.get("/api/auth/github", async (c) => {
   const auth = c.get("auth");
   return auth.handler(c.req.raw);
 });
@@ -150,7 +413,7 @@ app.post("/api/resumes", async (c) => {
 // --- WEBHOOK ROUTES ---
 app.post("/api/webhooks/pix", async (c) => {
   try {
-    const body = c.req.valid("json");
+    const body = await c.req.json(); // Usar json() em vez de valid()
     const paymentId = body.data?.id || body.payment_id;
     const userId = body.metadata?.user_id;
     const amount = body.transaction_amount;
@@ -209,25 +472,259 @@ app.use("/api/auth/facebook", facebookAuth({
 }));
 
 app.get("/api/auth/facebook/callback", async (c) => {
-  const user = c.get("user-facebook") as FacebookUser | undefined;
-  
-  if (!user) {
-    return c.json({ error: "Falha na autenticação com Facebook" }, 400);
+  const auth = c.get("auth");
+  if (auth) {
+    return auth.handler(c.req.raw);
   }
+  return c.json({ error: "Autenticação não configurada" }, 400);
+});
 
+// --- BILLING PIX ROUTE ---
+app.post("/api/billing/pix", async (c) => {
   try {
-    // Criar ou atualizar usuário no banco de dados
-    const dbUser = await createOrUpdateUser(c.env.DB, {
-      email: user.email || `${user.id}@facebook.com`,
-      name: user.name,
-      provider: "facebook",
-      providerId: user.id,
-    });
+    const body = await c.req.json();
+    const { email, amount, description } = body;
+    if (!email || !amount) return c.json({ error: "Dados obrigatórios ausentes" }, 400);
 
-    // Redirecionar para o dashboard após login bem-sucedido
-    return c.redirect("/dashboard");
+    // Configurar MercadoPago
+    const mp = new MercadoPagoConfig({
+      accessToken: c.env.INTERNAL_SECRET, // Troque para sua chave de produção
+    });
+    // Criar pagamento PIX
+    const response = await fetch("https://api.mercadopago.com/v1/payments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${c.env.INTERNAL_SECRET}`,
+      },
+      body: JSON.stringify({
+        transaction_amount: amount,
+        payment_method_id: "pix",
+        description: description || "Pagamento PIX",
+        payer: { email },
+      }),
+    });
+    const result = await response.json();
+    if (!result.point_of_interaction?.transaction_data?.ticket_url) {
+      return c.json({ error: "Falha ao criar pagamento PIX" }, 500);
+    }
+    return c.json({ ticket_url: result.point_of_interaction.transaction_data.ticket_url });
   } catch (error) {
-    console.error("Erro ao criar/atualizar usuário do Facebook:", error);
+    console.error("Erro ao criar pagamento PIX:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// --- FALLBACK ROUTE ---
+// --- SUBSCRIPTION ROUTES ---
+app.get("/api/subscriptions/:userId", async (c) => {
+  try {
+    const { userId } = c.req.param();
+    const db = c.get('db');
+    
+    // Verificar se o usuário tem permissão para acessar essas informações
+    // (implementar lógica de autenticação conforme necessário)
+    
+    const subscriptions = await db.select().from(schema.subscriptions)
+      .where(eq(schema.subscriptions.userId, userId))
+      .orderBy(desc(schema.subscriptions.createdAt));
+    
+    return c.json({ subscriptions });
+  } catch (error) {
+    console.error("Erro ao buscar assinaturas:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+app.post("/api/subscriptions", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { userId, planId, planType, amount } = body;
+    
+    if (!userId || !planId || !planType) {
+      return c.json({ error: "Dados obrigatórios ausentes" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Verificar se o usuário já tem uma assinatura ativa desse tipo
+    const existingSubscription = await db.select().from(schema.subscriptions)
+      .where(and(
+        eq(schema.subscriptions.userId, userId),
+        eq(schema.subscriptions.planType, planType as any),
+        eq(schema.subscriptions.status, 'active')
+      ))
+      .limit(1);
+    
+    if (existingSubscription.length > 0) {
+      return c.json({ error: "Usuário já possui uma assinatura ativa deste tipo" }, 400);
+    }
+    
+    // Criar nova assinatura
+    const startDate = new Date().toISOString();
+    const endDate = planType === 'monthly' ? 
+      new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString() : 
+      null;
+    
+    const newSubscription = await db.insert(schema.subscriptions).values({
+      userId,
+      planId,
+      planType: planType as any,
+      status: 'pending',
+      startDate,
+      endDate,
+      autoRenew: true,
+      amount: amount ? parseFloat(amount) : null,
+      currency: 'BRL',
+      metadata: JSON.stringify({ createdAt: new Date().toISOString() })
+    }).returning();
+    
+    return c.json({ subscription: newSubscription[0] });
+  } catch (error) {
+    console.error("Erro ao criar assinatura:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+app.put("/api/subscriptions/:subscriptionId", async (c) => {
+  try {
+    const { subscriptionId } = c.req.param();
+    const body = await c.req.json();
+    const { status } = body;
+    
+    const db = c.get('db');
+    
+    // Atualizar status da assinatura
+    const updatedSubscription = await db.update(schema.subscriptions)
+      .set({ 
+        status,
+        updatedAt: new Date().toISOString()
+      })
+      .where(eq(schema.subscriptions.id, parseInt(subscriptionId)))
+      .returning();
+    
+    if (updatedSubscription.length === 0) {
+      return c.json({ error: "Assinatura não encontrada" }, 404);
+    }
+    
+    // Se a assinatura foi ativada, adicionar créditos ao usuário
+    if (status === 'active') {
+      const subscription = updatedSubscription[0];
+      
+      // Buscar detalhes do plano (simulando, já que não temos a tabela de planos)
+      let creditsToAdd = 0;
+      if (subscription.planId === 'basic-monthly') {
+        creditsToAdd = 100;
+      } else if (subscription.planId === 'pro-monthly') {
+        creditsToAdd = 500;
+      }
+      
+      if (creditsToAdd > 0) {
+        // Adicionar créditos ao usuário
+        await creditUserBalance(c.env.DB, subscription.userId, creditsToAdd);
+      }
+    }
+    
+    return c.json({ subscription: updatedSubscription[0] });
+  } catch (error) {
+    console.error("Erro ao atualizar assinatura:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+app.delete("/api/subscriptions/:subscriptionId", async (c) => {
+  try {
+    const { subscriptionId } = c.req.param();
+    const db = c.get('db');
+    
+    // Cancelar assinatura (não deletar, apenas mudar o status)
+    const cancelledSubscription = await db.update(schema.subscriptions)
+      .set({ 
+        status: 'cancelled',
+        autoRenew: false,
+        updatedAt: new Date().toISOString()
+      })
+      .where(eq(schema.subscriptions.id, parseInt(subscriptionId)))
+      .returning();
+    
+    if (cancelledSubscription.length === 0) {
+      return c.json({ error: "Assinatura não encontrada" }, 404);
+    }
+    
+    return c.json({ subscription: cancelledSubscription[0] });
+  } catch (error) {
+    console.error("Erro ao cancelar assinatura:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+app.get("/api/workspaces/:id", async (c) => {
+  return c.json({ message: "Workspace get not implemented yet", status: "todo" }, 501);
+});
+
+app.put("/api/workspaces/:id", async (c) => {
+  return c.json({ message: "Workspace update not implemented yet", status: "todo" }, 501);
+});
+
+app.delete("/api/workspaces/:id", async (c) => {
+  return c.json({ message: "Workspace delete not implemented yet", status: "todo" }, 501);
+});
+
+app.post("/api/workspaces/:id/members", async (c) => {
+  return c.json({ message: "Workspace members not implemented yet", status: "todo" }, 501);
+});
+
+// --- PRIVACY ROUTES ---
+app.get("/api/privacy/data", async (c) => {
+  return c.json({ message: "Privacy data not implemented yet", status: "todo" }, 501);
+});
+
+app.post("/api/privacy/data-deletion", async (c) => {
+  return c.json({ message: "Data deletion not implemented yet", status: "todo" }, 501);
+});
+
+app.put("/api/privacy/consent", async (c) => {
+  return c.json({ message: "Consent update not implemented yet", status: "todo" }, 501);
+});
+
+// --- LEAD MANAGEMENT ROUTES ---
+// Rota para inicializar a tabela de leads (apenas para desenvolvimento)
+app.post("/api/leads/init", async (c) => {
+  try {
+    // Esta rota deve ser protegida em produção
+    const success = await initLeadsTable(c.env);
+    if (success) {
+      return c.json({ success: true, message: "Tabela de leads inicializada com sucesso" });
+    } else {
+      return c.json({ success: false, message: "Falha ao inicializar tabela de leads" }, 500);
+    }
+  } catch (error) {
+    console.error("Erro ao inicializar tabela de leads:", error);
+    return c.json({ success: false, message: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Rota para buscar leads
+app.get("/api/leads", async (c) => {
+  try {
+    const filter = c.req.query('filter') as 'all' | 'frio' | 'quente' | undefined;
+    const searchTerm = c.req.query('search');
+    
+    const leads = await fetchLeads(c.env, filter, searchTerm);
+    return c.json({ leads });
+  } catch (error) {
+    console.error("Erro ao buscar leads:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Rota para buscar estatísticas de leads
+app.get("/api/leads/stats", async (c) => {
+  try {
+    const stats = await fetchLeadsStats(c.env);
+    return c.json({ stats });
+  } catch (error) {
+    console.error("Erro ao buscar estatísticas de leads:", error);
     return c.json({ error: "Erro interno do servidor" }, 500);
   }
 });

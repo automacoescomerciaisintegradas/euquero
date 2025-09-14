@@ -23,13 +23,46 @@ const plans: SubscriptionPlan[] = [
     ],
   },
   {
+    id: 'basic-monthly',
+    name: 'Plano Básico',
+    type: 'monthly',
+    price: 29,
+    period: 'monthly',
+    credits: 100,
+    features: [
+      '100 créditos mensais',
+      'Acesso a todas as funcionalidades',
+      'Suporte por email',
+      'Créditos válidos por 12 meses',
+      'Relatórios básicos de uso',
+    ],
+  },
+  {
+    id: 'pro-monthly',
+    name: 'Plano Pro',
+    type: 'monthly',
+    price: 79,
+    period: 'monthly',
+    credits: 500,
+    highlighted: true,
+    badge: 'Mais Popular',
+    features: [
+      '500 créditos mensais',
+      'Acesso a todas as funcionalidades',
+      'Suporte prioritário 24/7',
+      'Créditos válidos por 12 meses',
+      'Relatórios detalhados de uso',
+      'Análise de sentimento',
+      'Agendamento avançado',
+    ],
+  },
+  {
     id: 'pay_per_use',
     name: 'Plano pay-per-use (pix)',
     type: 'pay_per_use',
     price: 50,
     credits: 50,
-    highlighted: true,
-    badge: 'Recomendado',
+    badge: 'Flexível',
     features: [
       'Recarga mínima de R$ 50,00',
       'Pagamento via PIX instantâneo',
@@ -54,13 +87,13 @@ export default function SubscriptionPlans({ currentPlan, onSelectPlan }: Subscri
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Assinaturas</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Planos e Assinaturas</h2>
         <p className="text-gray-600">
-          Contrate um novo plano! Aproveite nossas ofertas e tenha acesso a todos os recursos disponíveis.
+          Escolha o plano que melhor se adapta às suas necessidades. Todos incluem acesso completo às funcionalidades.
         </p>
         <div className="text-center mt-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-            Ver planos: Plano Grátis (testes) | Plano pay-per-use (pix)
+            Ver planos: Plano Grátis | Planos Mensais | Plano pay-per-use
           </span>
         </div>
       </div>
@@ -110,7 +143,17 @@ export default function SubscriptionPlans({ currentPlan, onSelectPlan }: Subscri
                 <div>
                   <div className="text-3xl font-bold text-gray-900">Grátis</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    {formatCurrency(plan.credits)} para teste
+                    {formatCurrency(plan.credits || 0)} para teste
+                  </div>
+                </div>
+              ) : plan.type === 'monthly' ? (
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">
+                    {formatCurrency(plan.price)}
+                    <span className="text-lg font-normal text-gray-600">/{plan.period === 'yearly' ? 'ano' : 'mês'}</span>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {plan.credits} créditos mensais
                   </div>
                 </div>
               ) : (
@@ -151,6 +194,8 @@ export default function SubscriptionPlans({ currentPlan, onSelectPlan }: Subscri
                 'Plano Atual'
               ) : plan.type === 'free' ? (
                 'Começar Grátis'
+              ) : plan.type === 'monthly' ? (
+                `Assinar ${plan.name}`
               ) : (
                 <>
                   <Zap className="w-4 h-4 inline mr-2" />
@@ -167,6 +212,7 @@ export default function SubscriptionPlans({ currentPlan, onSelectPlan }: Subscri
         <h4 className="font-semibold text-gray-900 mb-2">Sistema de Créditos Flexível</h4>
         <ul className="text-sm text-gray-600 space-y-1">
           <li>• <strong>Modelo Pay-per-use:</strong> Sem planos fixos, pague apenas pelo que usar</li>
+          <li>• <strong>Planos Mensais:</strong> Créditos recorrentes com desconto por comprometimento</li>
           <li>• <strong>Crédito inicial gratuito:</strong> R$ 3,00 para teste</li>
           <li>• <strong>Validade de 12 meses:</strong> Sistema temporal de créditos</li>
           <li>• <strong>Recarga mínima:</strong> R$ 50,00 via PIX</li>

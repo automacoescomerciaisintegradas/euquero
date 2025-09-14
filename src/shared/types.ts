@@ -11,6 +11,7 @@ export interface User {
   providerId?: string;
   emailVerified: boolean;
   subscription_status?: SubscriptionStatus;
+  twoFactorEnabled?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -165,9 +166,11 @@ export const LoginSchema = z.object({
 });
 
 export const RegisterSchema = z.object({
+  name: z.string().optional(),
   email: z.string().email("Email inválido"),
   password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
   phone: z.string().regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, "Telefone inválido"),
+  dataConsent: z.boolean().refine((val) => val === true, "Você precisa aceitar os termos de uso e política de privacidade"),
 });
 
 export type LoginData = z.infer<typeof LoginSchema>;
@@ -213,12 +216,13 @@ export interface PaymentMethod {
 export interface SubscriptionPlan {
   id: string;
   name: string;
-  type: 'free' | 'pay_per_use';
+  type: 'free' | 'pay_per_use' | 'monthly';
   price: number;
-  credits: number;
+  credits?: number;
   features: string[];
   highlighted?: boolean;
   badge?: string;
+  period?: 'monthly' | 'yearly';
 }
 
 // Schema para recarga de créditos (apenas PIX)

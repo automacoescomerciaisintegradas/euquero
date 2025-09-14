@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import OAuthButtons from '../components/auth/OAuthButtons';
+import ForgotPasswordForm from '../components/auth/ForgotPasswordForm';
+import ResetPasswordForm from '../components/auth/ResetPasswordForm';
 import { type LoginData, type RegisterData } from '../../shared/types';
 
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>('login');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -14,7 +16,8 @@ export default function AuthPage() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,7 +49,8 @@ export default function AuthPage() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,6 +76,69 @@ export default function AuthPage() {
     }
   };
 
+  const handleForgotPassword = async (email: string) => {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setMessage({
+          type: 'success',
+          text: result.message || 'Se o email estiver cadastrado, enviaremos instruções para recuperação da senha.'
+        });
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Erro ao solicitar recuperação de senha. Tente novamente.' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Erro de conexão. Tente novamente.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (token: string, newPassword: string) => {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, newPassword }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setMessage({
+          type: 'success',
+          text: result.message || 'Senha redefinida com sucesso!'
+        });
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Erro ao redefinir senha. Tente novamente.' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Erro de conexão. Tente novamente.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sempre redireciona para rotas relativas (GET)
   const handleGoogleLogin = () => {
     window.location.href = '/api/auth/google';
   };
@@ -102,29 +169,31 @@ export default function AuthPage() {
           </h1>
         </div>
 
-        {/* Tabs */}
-        <div className="mt-8">
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('login')}
-              className={`flex-1 py-2 px-4 text-center border-b-2 font-medium text-sm ${activeTab === 'login'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-            >
-              Entrar
-            </button>
-            <button
-              onClick={() => setActiveTab('register')}
-              className={`flex-1 py-2 px-4 text-center border-b-2 font-medium text-sm ${activeTab === 'register'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-            >
-              Cadastrar
-            </button>
+        {/* Tabs - apenas para login/register */}
+        {(activeTab === 'login' || activeTab === 'register') && (
+          <div className="mt-8">
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('login')}
+                className={`flex-1 py-2 px-4 text-center border-b-2 font-medium text-sm ${activeTab === 'login'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Entrar
+              </button>
+              <button
+                onClick={() => setActiveTab('register')}
+                className={`flex-1 py-2 px-4 text-center border-b-2 font-medium text-sm ${activeTab === 'register'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+              >
+                Cadastrar
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -142,7 +211,11 @@ export default function AuthPage() {
           {/* Formulários */}
           {activeTab === 'login' ? (
             <div>
-              <LoginForm onSubmit={handleLogin} loading={loading} />
+              <LoginForm 
+                onSubmit={handleLogin} 
+                loading={loading} 
+                onForgotPassword={() => setActiveTab('forgot-password')}
+              />
               <div className="mt-6">
                 <OAuthButtons
                   loading={loading}
@@ -153,7 +226,7 @@ export default function AuthPage() {
                 />
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'register' ? (
             <div>
               <RegisterForm onSubmit={handleRegister} loading={loading} />
               <div className="mt-6">
@@ -165,6 +238,21 @@ export default function AuthPage() {
                   onWhatsAppLogin={handleWhatsAppLogin}
                 />
               </div>
+            </div>
+          ) : activeTab === 'forgot-password' ? (
+            <div>
+              <ForgotPasswordForm 
+                onSubmit={handleForgotPassword} 
+                onBackToLogin={() => setActiveTab('login')} 
+                loading={loading} 
+              />
+            </div>
+          ) : (
+            <div>
+              <ResetPasswordForm 
+                onSubmit={handleResetPassword} 
+                loading={loading} 
+              />
             </div>
           )}
         </div>

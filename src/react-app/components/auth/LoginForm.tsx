@@ -5,9 +5,10 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 interface LoginFormProps {
   onSubmit: (data: LoginData) => Promise<void>;
   loading?: boolean;
+  onForgotPassword: () => void;
 }
 
-export default function LoginForm({ onSubmit, loading = false }: LoginFormProps) {
+export default function LoginForm({ onSubmit, loading = false, onForgotPassword }: LoginFormProps) {
   const [formData, setFormData] = useState<LoginData>({
     email: '',
     password: '',
@@ -111,12 +112,13 @@ export default function LoginForm({ onSubmit, loading = false }: LoginFormProps)
 
       {/* Link para recuperar senha */}
       <div className="text-center">
-        <a
-          href="/esqueci-senha"
+        <button
+          type="button"
+          onClick={onForgotPassword}
           className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
         >
           Esqueci minha senha
-        </a>
+        </button>
       </div>
     </form>
   );

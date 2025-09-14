@@ -54,7 +54,7 @@ Adicione no arquivo `.env`:
 ```env
 # Webhook PIX e N8n
 INTERNAL_SECRET=seu_segredo_interno_super_seguro_aqui_123456
-N8N_WEBHOOK_URL=https://n8n.iau2.com.br/webhook-test/euquero
+N8N_WEBHOOK_URL=https://webhook.iau2.com.br/webhook/euquero
 ```
 
 ### 2. Payload do Webhook PIX
@@ -91,7 +91,7 @@ O sistema envia para o N8n:
 ## Configuração do N8n
 
 ### 1. Webhook Node
-- **URL**: `https://n8n.iau2.com.br/webhook-test/euquero`
+- **URL**: `https://webhook.iau2.com.br/webhook/euquero`
 - **Método**: POST
 - **Autenticação**: Bearer Token (usar INTERNAL_SECRET)
 

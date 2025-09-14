@@ -1,0 +1,8 @@
+try {
+  const dbUser = await createOrUpdateUser(c.env.DB, { /* dados do usuário */ });
+  console.log("Usuário criado/atualizado:", dbUser); // Log para depuração
+  return c.redirect("/dashboard");
+} catch (error) {
+  console.error("Erro ao criar/atualizar usuário:", error);
+  return c.json({ error: "Erro no banco de dados" }, 500);
+}

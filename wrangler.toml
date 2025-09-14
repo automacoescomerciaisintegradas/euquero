@@ -9,5 +9,5 @@ compatibility_date = "2024-09-01"
 # D1 database binding
 [[d1_databases]]
 binding = "DB"
-database_name = "instagram-db"
-database_id = "05c16d70-6610-4257-f850-822529161924"
+database_name = "d1database"
+database_id = "ff4ca6de-8b86-4a90-a029-47f7f42f53dd"

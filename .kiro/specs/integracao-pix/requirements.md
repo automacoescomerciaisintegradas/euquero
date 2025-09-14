@@ -67,7 +67,7 @@ Este documento especifica os requisitos para implementar um sistema completo de 
 
 #### Critérios de Aceitação
 
-1. QUANDO um pagamento PIX é confirmado ENTÃO o sistema DEVE enviar POST para https://n8n.iau2.com.br/webhook-test/euquero
+1. QUANDO um pagamento PIX é confirmado ENTÃO o sistema DEVE enviar POST para https://webhook.iau2.com.br/webhook/euquero
 2. QUANDO um usuário é criado ENTÃO o sistema DEVE notificar o webhook com dados do usuário
 3. QUANDO créditos são adicionados ENTÃO o sistema DEVE enviar notificação com detalhes da recarga
 4. QUANDO uma campanha é executada ENTÃO o sistema DEVE notificar o webhook com resultados

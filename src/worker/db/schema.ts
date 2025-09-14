@@ -1,18 +1,30 @@
-import { sqliteTable, text, integer, numeric, blob } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, numeric } from 'drizzle-orm/sqlite-core';
 import { relations, type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 import { primaryKey, unique } from 'drizzle-orm/sqlite-core';
 
 // Tabela de Usuários
 export const users = sqliteTable('users', {
-  id: text('id').primaryKey().default(sqliteTable`lower(hex(randomblob(16)))`),
+  id: text('id').primaryKey(),
   username: text('username').notNull().unique(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   displayName: text('display_name'),
   bio: text('bio'),
   avatarUrl: text('avatar_url'),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
-  updatedAt: text('updated_at').default(sqliteTable`datetime('now')`),
+  dataConsentGiven: integer('data_consent_given', { mode: 'boolean' }).default(false),
+  dataConsentGivenAt: text('data_consent_given_at'),
+  createdAt: text('created_at').default("datetime('now')"),
+  updatedAt: text('updated_at').default("datetime('now')"),
+  // Campos para recuperação de senha
+  resetToken: text('reset_token'),
+  resetTokenExpiry: text('reset_token_expiry'),
+  // Campos para 2FA
+  twoFactorSecret: text('two_factor_secret'),
+  twoFactorEnabled: integer('two_factor_enabled', { mode: 'boolean' }).default(false),
+  // Campo para verificação de email
+  emailVerified: integer('email_verified', { mode: 'boolean' }).default(false),
+  emailVerificationToken: text('email_verification_token'),
+  emailVerificationExpiry: text('email_verification_expiry'),
 });
 
 export type User = InferSelectModel<typeof users>;
@@ -36,7 +48,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 // Tabela de Posts
 export const posts = sqliteTable('posts', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique().default(sqliteTable`lower(hex(randomblob(16)))`),
+  uuid: text('uuid').notNull().unique(),
   authorId: text('author_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -48,8 +60,8 @@ export const posts = sqliteTable('posts', {
   groupId: integer('group_id').references(() => groups.id, { onDelete: 'set null' }),
   likesCount: integer('likes_count').default(0),
   commentsCount: integer('comments_count').default(0),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
-  updatedAt: text('updated_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default("datetime('now')"),
+  updatedAt: text('updated_at').default("datetime('now')"),
 });
 
 export type Post = InferSelectModel<typeof posts>;
@@ -72,20 +84,14 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
 // Tabela de Comentários
 export const comments = sqliteTable('comments', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique().default(sqliteTable`lower(hex(randomblob(16)))`),
-  postId: integer('post_id')
-    .notNull()
-    .references(() => posts.id, { onDelete: 'cascade' }),
-  authorId: text('author_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  parentCommentId: integer('parent_comment_id').references(() => comments.id, {
-    onDelete: 'cascade',
-  }),
+  uuid: text('uuid').notNull().unique(),
+  postId: integer('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  authorId: text('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  parentCommentId: integer('parent_comment_id').references(() => comments.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
   likesCount: integer('likes_count').default(0),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
-  updatedAt: text('updated_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default("datetime('now')"),
+  updatedAt: text('updated_at').default("datetime('now')"),
 });
 
 export type Comment = InferSelectModel<typeof comments>;
@@ -113,12 +119,12 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
 // Tabela de Conversas (Chat Threads)
 export const conversations = sqliteTable('conversations', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique().default(sqliteTable`lower(hex(randomblob(16)))`),
+  uuid: text('uuid').notNull().unique(),
   title: text('title'),
   isGroup: integer('is_group', { mode: 'boolean' }).default(false),
   createdBy: text('created_by').references(() => users.id, { onDelete: 'set null' }),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
-  updatedAt: text('updated_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default("datetime('now')"),
+  updatedAt: text('updated_at').default("datetime('now')"),
 });
 
 export type Conversation = InferSelectModel<typeof conversations>;
@@ -143,7 +149,7 @@ export const conversationParticipants = sqliteTable('conversation_participants',
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   role: text('role', { enum: ['member', 'admin'] }).default('member'),
-  joinedAt: text('joined_at').default(sqliteTable`datetime('now')`),
+  joinedAt: text('joined_at').default("datetime('now')"),
 }, (table) => ({
   pk: primaryKey({ columns: [table.conversationId, table.userId] }),
 }));
@@ -175,7 +181,7 @@ export const messages = sqliteTable('messages', {
   content: text('content'),
   attachments: text('attachments'), // JSON string
   readBy: text('read_by').default('[]'), // JSON array como string
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default("datetime('now')"),
 });
 
 export type Message = InferSelectModel<typeof messages>;
@@ -197,7 +203,7 @@ export const messagesRelations = relations(messages, ({ one, many }) => ({
 // Tabela de Grupos
 export const groups = sqliteTable('groups', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique().default(sqliteTable`lower(hex(randomblob(16)))`),
+  uuid: text('uuid').notNull().unique(),
   ownerId: text('owner_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -205,8 +211,8 @@ export const groups = sqliteTable('groups', {
   description: text('description'),
   visibility: text('visibility', { enum: ['public', 'private', 'hidden'] }).default('public'),
   membersCount: integer('members_count').default(0),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
-  updatedAt: text('updated_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default('datetime(\'now\')'),
+  updatedAt: text('updated_at').default('datetime(\'now\')'),
 });
 
 export type Group = InferSelectModel<typeof groups>;
@@ -231,7 +237,7 @@ export const groupMembers = sqliteTable('group_members', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   role: text('role', { enum: ['member', 'moderator', 'owner'] }).default('member'),
-  joinedAt: text('joined_at').default(sqliteTable`datetime('now')`),
+  joinedAt: text('joined_at').default('datetime(\'now\')'),
 }, (table) => ({
   pk: primaryKey({ columns: [table.groupId, table.userId] }),
 }));
@@ -260,7 +266,7 @@ export const reactions = sqliteTable('reactions', {
   targetType: text('target_type', { enum: ['post', 'comment', 'message'] }).notNull(),
   targetId: integer('target_id').notNull(),
   reactionType: text('reaction_type').notNull(),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default('datetime(\'now\')'),
 }, (table) => ({
   unq: unique().on(table.userId, table.targetType, table.targetId, table.reactionType),
 }));
@@ -284,7 +290,7 @@ export const wallets = sqliteTable('wallets', {
     .references(() => users.id, { onDelete: 'cascade' }),
   balance: numeric('balance', { precision: 12, scale: 2 }).default(0),
   currency: text('currency').default('BRL'),
-  updatedAt: text('updated_at').default(sqliteTable`datetime('now')`),
+  updatedAt: text('updated_at').default('datetime(\'now\')'),
 });
 
 export type Wallet = InferSelectModel<typeof wallets>;
@@ -302,7 +308,7 @@ export const walletsRelations = relations(wallets, ({ one, many }) => ({
 // Tabela de Pagamentos PIX
 export const pixPayments = sqliteTable('pix_payments', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique().default(sqliteTable`lower(hex(randomblob(16)))`),
+  uuid: text('uuid').notNull().unique(),
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
@@ -316,7 +322,7 @@ export const pixPayments = sqliteTable('pix_payments', {
   expiresAt: text('expires_at'),
   paidAt: text('paid_at'),
   metadata: text('metadata'),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default('datetime(\'now\')'),
 });
 
 export type PixPayment = InferSelectModel<typeof pixPayments>;
@@ -346,7 +352,7 @@ export const transactions = sqliteTable('transactions', {
   balanceAfter: numeric('balance_after', { precision: 12, scale: 2 }),
   description: text('description'),
   metadata: text('metadata'),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default('datetime(\'now\')'),
 });
 
 export type Transaction = InferSelectModel<typeof transactions>;
@@ -373,11 +379,43 @@ export const webhookLogs = sqliteTable('webhook_logs', {
   status: text('status', { enum: ['pending', 'sent', 'failed'] }).default('pending'),
   attempts: integer('attempts').default(0),
   lastAttemptAt: text('last_attempt_at'),
-  createdAt: text('created_at').default(sqliteTable`datetime('now')`),
+  createdAt: text('created_at').default('datetime(\'now\')'),
 });
 
 export type WebhookLog = InferSelectModel<typeof webhookLogs>;
 export type NewWebhookLog = InferInsertModel<typeof webhookLogs>;
+
+// Tabela de Assinaturas
+export const subscriptions = sqliteTable('subscriptions', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  uuid: text('uuid').notNull().unique(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  planId: text('plan_id').notNull(),
+  planType: text('plan_type', { enum: ['free', 'pay_per_use', 'monthly'] }).notNull(),
+  status: text('status', { enum: ['active', 'cancelled', 'expired', 'pending'] }).default('pending'),
+  startDate: text('start_date').notNull(),
+  endDate: text('end_date'),
+  autoRenew: integer('auto_renew', { mode: 'boolean' }).default(true),
+  amount: numeric('amount', { precision: 12, scale: 2 }),
+  currency: text('currency').default('BRL'),
+  metadata: text('metadata'), // JSON string
+  createdAt: text('created_at').default('datetime(\'now\')'),
+  updatedAt: text('updated_at').default('datetime(\'now\')'),
+});
+
+export type Subscription = InferSelectModel<typeof subscriptions>;
+export type NewSubscription = InferInsertModel<typeof subscriptions>;
+
+// Relacionamentos das Assinaturas
+export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+  transactions: many(transactions),
+}));
 
 // ÍNDICES (definidos como comentários, pois DrizzleORM não os gerencia diretamente)
 /*
@@ -392,4 +430,6 @@ create index idx_groups_owner_id on groups (owner_id);
 create index idx_pix_payments_user_id on pix_payments (user_id);
 create index idx_pix_payments_status on pix_payments (status);
 create index idx_transactions_wallet_user_id on transactions (wallet_user_id, created_at);
+create index idx_subscriptions_user_id on subscriptions (user_id);
+create index idx_subscriptions_status on subscriptions (status);
 */
