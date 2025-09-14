@@ -1,38 +1,38 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { betterAuth } from "better-auth";
-import { google } from "better-auth/plugins/google";
-import { github } from "better-auth/plugins/github";
-import { hono } from "better-auth/hono"; // Handler específico para Hono
-import { facebookAuth } from "@hono/oauth-providers/facebook";
-import { createOrUpdateUser, getUserByEmail, getUserById } from "./db";
+import { Hono } from "hono"
+import { cors } from "hono/cors"
+import { betterAuth } from "better-auth"
+import { google } from "better-auth/plugins/google"
+import { github } from "better-auth/plugins/github"
+import { hono } from "better-auth/hono" // Handler específico para Hono
+import { facebookAuth } from "@hono/oauth-providers/facebook"
+import { createOrUpdateUser, getUserByEmail, getUserById } from "./db"
 import {
   type AuthResponse,
   type User,
   type N8nNotificationPayload,
-} from "@/shared/types";
+} from "@/shared/types"
 import {
   initializeDatabase,
   createUser,
   getUserByEmail,
   createOrUpdateUserFromOAuth,
-} from "./db";
+} from "./db"
 import {
   notifyN8n,
   addToRetryQueue,
   processRetryQueue,
   creditUserBalance,
-} from "./webhook-utils";
-import { getSupabaseClient } from "./supabase";
-import { createResume } from "./supabase-resumes";
-import { processLead, initLeadsTable } from "./lead-utils";
-import { fetchLeads, fetchLeadsStats } from "./leads-api";
-import type { Env } from "./env";
-import type { FacebookUser } from "@hono/oauth-providers/facebook/types";
-import { MercadoPagoConfig } from "mercadopago";
+} from "./webhook-utils"
+import { getSupabaseClient } from "./supabase"
+import { createResume } from "./supabase-resumes"
+import { processLead, initLeadsTable } from "./lead-utils"
+import { fetchLeads, fetchLeadsStats } from "./leads-api"
+import type { Env } from "./env"
+import type { FacebookUser } from "@hono/oauth-providers/facebook/types"
+import { MercadoPagoConfig } from "mercadopago"
 import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './db/schema';
-import { eq, and, desc, gt } from 'drizzle-orm';
+import { eq, and, desc, gt, sql } from 'drizzle-orm';
 import type { D1Database } from '@cloudflare/workers-types';
 
 const app = new Hono<{
@@ -148,19 +148,55 @@ app.post("/api/auth/register", async (c) => {
   
   // Capturar os dados do registro antes de processar
   const requestData = await c.req.json();
+  const { referralCode, ...registrationData } = requestData;
   
   // Processar o registro com BetterAuth
   const response = await auth.handler(c.req.raw);
   
-  // Se o registro foi bem-sucedido, processar o lead
+  // Se o registro foi bem-sucedido, processar o lead e a indicação
   if (response.status === 200) {
     // Processar o lead em background
     c.executionCtx.waitUntil(
       processLead(c.env, {
-        ...requestData,
+        ...registrationData,
         registeredAt: new Date().toISOString()
       })
     );
+    
+    // Processar código de indicação se existir
+    if (referralCode) {
+      try {
+        const responseBody = await response.clone().json();
+        const userId = responseBody.user?.id;
+        
+        if (userId) {
+          // Chamar endpoint para rastrear a indicação
+          await fetch('/api/referrals/track', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              referralCode,
+              userId
+            })
+          });
+          
+          // Completar a indicação agora que o usuário se registrou
+          await fetch('/api/referrals/complete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId
+            })
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao processar código de indicação:", error);
+      }
+    }
   }
   
   return response;
@@ -429,6 +465,10 @@ app.post("/api/webhooks/pix", async (c) => {
       if (!notificationSent) {
         addToRetryQueue({ user_id: userId, payment_id: paymentId, amount, status: 'pending', retries: 0, last_attempt: new Date() });
       }
+      
+      // Verificar se este pagamento está relacionado a uma indicação
+      // (isso seria implementado com base nos dados do pagamento)
+      
       return c.json({ ok: true, credited: amount, notification_sent: notificationSent });
     }
     return c.json({ status: "aguardando", message: `Status: ${status}` });
@@ -725,6 +765,338 @@ app.get("/api/leads/stats", async (c) => {
     return c.json({ stats });
   } catch (error) {
     console.error("Erro ao buscar estatísticas de leads:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// --- REFERRAL SYSTEM ROUTES ---
+// Generate referral code for user
+app.post("/api/referrals/generate", async (c) => {
+  try {
+    const { userId } = await c.req.json();
+    
+    if (!userId) {
+      return c.json({ error: "ID do usuário é obrigatório" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Check if user already has a referral code
+    const existingCode = await db.query.referralCodes.findFirst({
+      where: eq(schema.referralCodes.userId, userId)
+    });
+    
+    if (existingCode) {
+      return c.json({ 
+        success: true, 
+        code: existingCode.code,
+        message: "Código de indicação já existente" 
+      });
+    }
+    
+    // Generate unique referral code
+    const generateUniqueCode = async (): Promise<string> => {
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 8; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      
+      // Check if code already exists
+      const existing = await db.query.referralCodes.findFirst({
+        where: eq(schema.referralCodes.code, code)
+      });
+      
+      // If exists, generate another
+      if (existing) {
+        return generateUniqueCode();
+      }
+      
+      return code;
+    };
+    
+    const referralCode = await generateUniqueCode();
+    
+    // Create referral code
+    const newReferralCode = await db.insert(schema.referralCodes).values({
+      uuid: crypto.randomUUID(),
+      userId,
+      code: referralCode,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }).returning();
+    
+    return c.json({ 
+      success: true, 
+      code: newReferralCode[0].code,
+      message: "Código de indicação gerado com sucesso" 
+    });
+  } catch (error) {
+    console.error("Erro ao gerar código de indicação:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Get user's referral code
+app.get("/api/referrals/my-code", async (c) => {
+  try {
+    const userId = c.req.query('userId');
+    
+    if (!userId) {
+      return c.json({ error: "ID do usuário é obrigatório" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    const referralCode = await db.query.referralCodes.findFirst({
+      where: eq(schema.referralCodes.userId, userId)
+    });
+    
+    if (!referralCode) {
+      return c.json({ 
+        success: true, 
+        code: null,
+        message: "Nenhum código de indicação encontrado" 
+      });
+    }
+    
+    return c.json({ 
+      success: true, 
+      code: referralCode.code,
+      isActive: referralCode.isActive
+    });
+  } catch (error) {
+    console.error("Erro ao buscar código de indicação:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Get referral statistics
+app.get("/api/referrals/stats", async (c) => {
+  try {
+    const userId = c.req.query('userId');
+    
+    if (!userId) {
+      return c.json({ error: "ID do usuário é obrigatório" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Count total referrals
+    const totalReferrals = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.referrals)
+      .where(eq(schema.referrals.referrerId, userId));
+    
+    // Count completed referrals
+    const completedReferrals = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.referrals)
+      .where(and(
+        eq(schema.referrals.referrerId, userId),
+        eq(schema.referrals.status, 'completed')
+      ));
+    
+    // Count pending referrals
+    const pendingReferrals = await db.select({ count: sql<number>`count(*)` })
+      .from(schema.referrals)
+      .where(and(
+        eq(schema.referrals.referrerId, userId),
+        eq(schema.referrals.status, 'pending')
+      ));
+    
+    // Sum of rewards earned
+    const rewardsEarned = await db.select({ sum: sql<number>`sum(${schema.referrals.rewardAmount})` })
+      .from(schema.referrals)
+      .where(and(
+        eq(schema.referrals.referrerId, userId),
+        eq(schema.referrals.status, 'completed')
+      ));
+    
+    return c.json({ 
+      success: true,
+      stats: {
+        total: totalReferrals[0].count,
+        completed: completedReferrals[0].count,
+        pending: pendingReferrals[0].count,
+        rewardsEarned: rewardsEarned[0].sum || 0
+      }
+    });
+  } catch (error) {
+    console.error("Erro ao buscar estatísticas de indicação:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Track referral signup
+app.post("/api/referrals/track", async (c) => {
+  try {
+    const { referralCode, userId } = await c.req.json();
+    
+    if (!referralCode || !userId) {
+      return c.json({ error: "Código de indicação e ID do usuário são obrigatórios" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Find referral code
+    const code = await db.query.referralCodes.findFirst({
+      where: eq(schema.referralCodes.code, referralCode)
+    });
+    
+    if (!code) {
+      return c.json({ error: "Código de indicação inválido" }, 400);
+    }
+    
+    if (!code.isActive) {
+      return c.json({ error: "Código de indicação inativo" }, 400);
+    }
+    
+    // Check if referral already exists
+    const existingReferral = await db.query.referrals.findFirst({
+      where: and(
+        eq(schema.referrals.referralCode, referralCode),
+        eq(schema.referrals.referredId, userId)
+      )
+    });
+    
+    if (existingReferral) {
+      return c.json({ 
+        success: true, 
+        message: "Indicação já registrada" 
+      });
+    }
+    
+    // Create referral record
+    const newReferral = await db.insert(schema.referrals).values({
+      uuid: crypto.randomUUID(),
+      referrerId: code.userId,
+      referredId: userId,
+      referralCode,
+      status: 'pending',
+      rewardAmount: 10, // R$10 for both referrer and referred
+      credited: false,
+      createdAt: new Date().toISOString()
+    }).returning();
+    
+    return c.json({ 
+      success: true, 
+      referralId: newReferral[0].id,
+      message: "Indicação registrada com sucesso" 
+    });
+  } catch (error) {
+    console.error("Erro ao registrar indicação:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Award credits to referrer
+app.post("/api/referrals/award-credits", async (c) => {
+  try {
+    const { referralId } = await c.req.json();
+    
+    if (!referralId) {
+      return c.json({ error: "ID da indicação é obrigatório" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Get referral
+    const referral = await db.query.referrals.findFirst({
+      where: eq(schema.referrals.id, referralId)
+    });
+    
+    if (!referral) {
+      return c.json({ error: "Indicação não encontrada" }, 404);
+    }
+    
+    if (referral.status !== 'pending') {
+      return c.json({ error: "Indicação já processada" }, 400);
+    }
+    
+    // Update referral status
+    await db.update(schema.referrals)
+      .set({ 
+        status: 'completed',
+        credited: true,
+        completedAt: new Date().toISOString()
+      })
+      .where(eq(schema.referrals.id, referralId));
+    
+    // Award credits to referrer (R$10)
+    await creditUserBalance(c.env.DB, referral.referrerId, 10);
+    
+    // Award credits to referred user (R$10)
+    await creditUserBalance(c.env.DB, referral.referredId!, 10);
+    
+    return c.json({ 
+      success: true, 
+      message: "Créditos concedidos com sucesso" 
+    });
+  } catch (error) {
+    console.error("Erro ao conceder créditos:", error);
+    return c.json({ error: "Erro interno do servidor" }, 500);
+  }
+});
+
+// Complete referral when user confirms email or completes registration
+app.post("/api/referrals/complete", async (c) => {
+  try {
+    const { userId } = await c.req.json();
+    
+    if (!userId) {
+      return c.json({ error: "ID do usuário é obrigatório" }, 400);
+    }
+    
+    const db = c.get('db');
+    
+    // Find pending referrals for this user
+    const pendingReferrals = await db.query.referrals.findMany({
+      where: and(
+        eq(schema.referrals.referredId, userId),
+        eq(schema.referrals.status, 'pending')
+      )
+    });
+    
+    if (pendingReferrals.length === 0) {
+      return c.json({ 
+        success: true, 
+        message: "Nenhuma indicação pendente encontrada" 
+      });
+    }
+    
+    // Complete all pending referrals for this user
+    const results = [];
+    for (const referral of pendingReferrals) {
+      try {
+        // Update referral status
+        await db.update(schema.referrals)
+          .set({ 
+            status: 'completed',
+            credited: true,
+            completedAt: new Date().toISOString()
+          })
+          .where(eq(schema.referrals.id, referral.id));
+        
+        // Award credits to referrer (R$10)
+        await creditUserBalance(c.env.DB, referral.referrerId, 10);
+        
+        // Award credits to referred user (R$10)
+        await creditUserBalance(c.env.DB, referral.referredId!, 10);
+        
+        results.push({ referralId: referral.id, success: true });
+      } catch (error) {
+        console.error(`Erro ao completar indicação ${referral.id}:`, error);
+        results.push({ referralId: referral.id, success: false, error: "Erro ao conceder créditos" });
+      }
+    }
+    
+    return c.json({ 
+      success: true, 
+      results,
+      message: "Indicações processadas com sucesso" 
+    });
+  } catch (error) {
+    console.error("Erro ao completar indicações:", error);
     return c.json({ error: "Erro interno do servidor" }, 500);
   }
 });

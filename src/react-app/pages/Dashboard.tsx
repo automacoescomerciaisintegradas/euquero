@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Settings, LogOut, Bell, Menu, X, BarChart3, CreditCard as CreditIcon, History, Zap, DollarSign, Clock, Users } from 'lucide-react';
+import { User, Settings, LogOut, Bell, Menu, X, BarChart3, CreditCard as CreditIcon, History, Zap, DollarSign, Clock, Users, Gift } from 'lucide-react';
 import type { 
   User as UserType, 
   CreditBalance, 
@@ -43,6 +43,7 @@ import { InstagramSetup } from '../components/InstagramSetup';
 import UserSubscriptions from '../components/dashboard/UserSubscriptions';
 import TwoFactorStatus from '../components/dashboard/TwoFactorStatus';
 import LeadManagement from '../components/dashboard/LeadManagement';
+import ReferralDashboard from '../components/dashboard/ReferralDashboard';
 import useAutomationRules from '../hooks/useAutomationRules';
 
 // Componentes (assumindo que existem ou stubs)
@@ -324,6 +325,7 @@ export default function Dashboard() {
               <button onClick={() => { setActiveTab('overview'); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-md text-gray-900 dark:text-white font-medium">Overview</button>
               <button onClick={() => { setActiveTab('automation'); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-md text-gray-900 dark:text-white font-medium">Automação</button>
               <button onClick={() => { setActiveTab('leads'); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-md text-gray-900 dark:text-white font-medium">Leads</button>
+              <button onClick={() => { setActiveTab('referrals'); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-md text-gray-900 dark:text-white font-medium">Indique e Ganhe</button>
               <button onClick={() => { setActiveTab('plans'); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-md text-gray-900 dark:text-white font-medium">Planos</button>
               <button onClick={() => { setActiveTab('history'); setIsMobileMenuOpen(false); }} className="w-full text-left px-3 py-2 rounded-md text-gray-900 dark:text-white font-medium">Histórico</button>
             </nav>
@@ -346,6 +348,10 @@ export default function Dashboard() {
             <button onClick={() => setActiveTab('leads')} className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md ${activeTab === 'leads' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
               <Users className="w-5 h-5" />
               <span>Leads</span>
+            </button>
+            <button onClick={() => setActiveTab('referrals')} className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md ${activeTab === 'referrals' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+              <Gift className="w-5 h-5" />
+              <span>Indique e Ganhe</span>
             </button>
             <button onClick={() => setActiveTab('plans')} className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md ${activeTab === 'plans' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
               <DollarSign className="w-5 h-5" />
@@ -434,6 +440,9 @@ export default function Dashboard() {
             <div className="space-y-6">
               <LeadManagement />
             </div>
+          )}
+          {activeTab === 'referrals' && (
+            <ReferralDashboard user={user} />
           )}
           {activeTab === 'history' && <LocalTransactionHistory transactions={transactions} onExport={handleExportTransactions} />}
         </main>

@@ -47,5 +47,4 @@ Este documento orienta agentes de IA (ex: GitHub Copilot, Claude, Cursor) para s
 ## Referências
 - Estrutura detalhada: Seção "Estrutura do Projeto" em `README.md`.
 - OAuth e Webhooks: `docs/oauth-setup.md` e `docs/webhook-pix-setup.md`.
-- Funcionalidades: `docs/FUNCIONALIDADES_// Versão simplificada
-<Tooltip formatter={(value: number) => [value, 'Quantidade']} />
+- Funcionalidades: `docs/FUNCIONALIDADES_IMPLEMENTADAS.md`

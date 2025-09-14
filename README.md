@@ -76,6 +76,7 @@ src/
 - ✅ Arquitetura serverless escalável
 - ✅ Sistema de autenticação OAuth (Google, GitHub, Facebook)
 - ✅ Sistema de autenticação via WhatsApp
+- ✅ Sistema de indicação e recompensas (Indique e Ganhe)
 
 ## Tecnologias Utilizadas
 
@@ -86,3 +87,18 @@ src/
 - **Zod**: Validação de dados em runtime
 - **Vite**: Build tool rápido e moderno
 - **Cloudflare Workers**: Runtime serverless global
+
+## API de Indicação e Recompensas
+
+O sistema "Indique e Ganhe" permite que os usuários convidem amigos para a plataforma e recebam recompensas em créditos.
+
+### Endpoints
+
+- `POST /api/referrals/generate` - Gera um código de indicação para o usuário
+- `GET /api/referrals/my-code` - Retorna o código de indicação do usuário
+- `GET /api/referrals/stats` - Retorna estatísticas de indicações do usuário
+- `POST /api/referrals/track` - Rastreia uma indicação quando um amigo se registra
+- `POST /api/referrals/award-credits` - Concede créditos ao indicador
+- `POST /api/referrals/complete` - Completa indicações pendentes quando um usuário confirma registro
+
+Cada indicação bem-sucedida concede R$10 em créditos tanto para o indicador quanto para o indicado.

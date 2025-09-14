@@ -385,6 +385,66 @@ export const webhookLogs = sqliteTable('webhook_logs', {
 export type WebhookLog = InferSelectModel<typeof webhookLogs>;
 export type NewWebhookLog = InferInsertModel<typeof webhookLogs>;
 
+// Tabela de Códigos de Indicação
+export const referralCodes = sqliteTable('referral_codes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  uuid: text('uuid').notNull().unique(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  code: text('code').notNull().unique(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  createdAt: text('created_at').default('datetime(\'now\')'),
+  updatedAt: text('updated_at').default('datetime(\'now\')'),
+});
+
+export type ReferralCode = InferSelectModel<typeof referralCodes>;
+export type NewReferralCode = InferInsertModel<typeof referralCodes>;
+
+// Tabela de Indicações
+export const referrals = sqliteTable('referrals', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  uuid: text('uuid').notNull().unique(),
+  referrerId: text('referrer_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  referredId: text('referred_id').references(() => users.id, { onDelete: 'set null' }),
+  referralCode: text('referral_code').notNull(),
+  status: text('status', { enum: ['pending', 'completed', 'expired'] }).default('pending'),
+  rewardAmount: numeric('reward_amount', { precision: 12, scale: 2 }).default(0),
+  credited: integer('credited', { mode: 'boolean' }).default(false),
+  createdAt: text('created_at').default('datetime(\'now\')'),
+  completedAt: text('completed_at'),
+});
+
+export type Referral = InferSelectModel<typeof referrals>;
+export type NewReferral = InferInsertModel<typeof referrals>;
+
+// Relacionamentos dos Códigos de Indicação
+export const referralCodesRelations = relations(referralCodes, ({ one, many }) => ({
+  user: one(users, {
+    fields: [referralCodes.userId],
+    references: [users.id],
+  }),
+  referrals: many(referrals),
+}));
+
+// Relacionamentos das Indicações
+export const referralsRelations = relations(referrals, ({ one }) => ({
+  referrer: one(users, {
+    fields: [referrals.referrerId],
+    references: [users.id],
+  }),
+  referred: one(users, {
+    fields: [referrals.referredId],
+    references: [users.id],
+  }),
+  referralCode: one(referralCodes, {
+    fields: [referrals.referralCode],
+    references: [referralCodes.code],
+  }),
+}));
+
 // Tabela de Assinaturas
 export const subscriptions = sqliteTable('subscriptions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -432,4 +492,9 @@ create index idx_pix_payments_status on pix_payments (status);
 create index idx_transactions_wallet_user_id on transactions (wallet_user_id, created_at);
 create index idx_subscriptions_user_id on subscriptions (user_id);
 create index idx_subscriptions_status on subscriptions (status);
+create index idx_referral_codes_user_id on referral_codes (user_id);
+create index idx_referral_codes_code on referral_codes (code);
+create index idx_referrals_referrer_id on referrals (referrer_id);
+create index idx_referrals_referred_id on referrals (referred_id);
+create index idx_referrals_status on referrals (status);
 */

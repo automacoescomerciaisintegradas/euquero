@@ -135,3 +135,15 @@ Para configurar o ambiente de desenvolvimento:
 - O backend roda em Cloudflare Workers com D1 Database
 - O frontend é servido estaticamente pelo Cloudflare Pages
 - O sistema de créditos utiliza webhooks PIX para processamento de pagamentos
+
+## Instruções para Agentes de IA
+
+- Sempre que um agente de IA for utilizado, ele deve seguir as convenções de codificação e estrutura do projeto descritas neste documento.
+- Os agentes devem utilizar preferencialmente as tecnologicas já adotadas no projeto (React, TypeScript, Tailwind CSS, Hono, Zod, Cloudflare Workers).
+- Qualquer nova dependência ou biblioteca adicionada por um agente deve ser justificada e alinhada com os princípios do projeto.
+- Os agentes devem manter a consistência com o código existente, respeitando os padrões de nomenclatura, estrutura de pastas e componentização.
+- É fundamental que os agentes verifiquem se suas modificações não quebram a funcionalidade existente, rodando os testes e builds quando apropriado.
+- Ao gerar código, os agentes devem incluir comentários explicativos apenas quando necessário para esclarecer lógica complexa.
+- Os agentes devem sempre buscar entender o contexto completo antes de realizar alterações, utilizando ferramentas de leitura e busca disponíveis.
+- Mudanças propostas por agentes devem estar alinhadas com a visão geral do projeto e suas funcionalidades planejadas.
+- Reúna recursivamente todas as informações relevantes, buscando links adicionais até obter todas as informações necessárias.

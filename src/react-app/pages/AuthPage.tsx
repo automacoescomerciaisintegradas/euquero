@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import OAuthButtons from '../components/auth/OAuthButtons';
@@ -10,6 +10,19 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>('login');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Capturar código de indicação da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+      // Armazenar no localStorage para uso posterior
+      localStorage.setItem('referralCode', refCode);
+    }
+  }, []);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   const handleLogin = async (data: LoginData) => {
     setLoading(true);
@@ -50,12 +63,19 @@ export default function AuthPage() {
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '';
+      
+      // Incluir código de indicação se existir
+      const registrationData = {
+        ...data,
+        referralCode: referralCode || localStorage.getItem('referralCode')
+      };
+
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(registrationData),
       });
 
       const result = await response.json();
@@ -66,6 +86,9 @@ export default function AuthPage() {
           text: result.message || 'Cadastro realizado com sucesso! Verifique seu email para confirmar a conta.'
         });
         setActiveTab('login');
+        
+        // Limpar código de indicação do localStorage após uso
+        localStorage.removeItem('referralCode');
       } else {
         setMessage({ type: 'error', text: result.message || 'Erro ao fazer cadastro. Tente novamente.' });
       }
